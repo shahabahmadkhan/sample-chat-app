@@ -1,4 +1,4 @@
-<html>
+<html ng-app="chatApp" >
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
@@ -7,8 +7,103 @@
     <title>
         <%= current_title %>
     </title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
+          integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+
 </head>
-<body>
-Hey There...Wassup?
+<body class="bg-light" ng-controller="chatPageController">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-3 bg-dark h-100 pt-5">
+            <div class="chat">
+                <div class="card mb-sm-3 mb-md-0 contacts_card">
+                    <div class="card-body contacts_body">
+                        <ui class="contacts">
+                            <li ng-click="openChatDetails(key)" ng-cloak ng-class="recentUser.activeSession? 'active' : ''" ng-repeat="(key,recentUser) in listOfRecentChats">
+                                <div class="d-flex bd-highlight">
+                                    <div class="img_cont">
+                                        <img src="{{recentUser.userImage}}"
+                                             class="rounded-circle user_img">
+                                        <span class="online_icon"></span>
+                                    </div>
+                                    <div class="user_info">
+                                        <span>{{recentUser.userFullName}}</span>
+                                        <p>{{recentUser.currentStatus}}</p>
+                                    </div>
+                                </div>
+                            </li>
+                        </ui>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-9 bg-light h-100 w-100 pt-5">
+            <div class="chat">
+                <div class="card">
+
+                    <div class="card-body msg_card_body">
+                        <div ng-cloak ng-repeat="msg in listOfRecentChats[activeChatUserId].chatArray">
+                            <div class="d-flex justify-content-start mb-4" ng-if="msg.direction === 'sent'">
+                                <div class="img_cont_msg">
+                                    <img src="{{currentUserDetails.userImage}}"
+                                         class="rounded-circle user_img_msg">
+                                </div>
+                                <div class="msg_cotainer">
+                                    {{msg.chatTxt}}
+                                    <span class="msg_time">{{msg.time}}</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end mb-4" ng-if="msg.direction === 'received'">
+                                <div class="msg_cotainer_send">
+                                    {{msg.chatTxt}}
+                                    <span class="msg_time_send">{{msg.time}}</span>
+                                </div>
+                                <div class="img_cont_msg">
+                                    <img src="{{listOfRecentChats[activeChatUserId].userImage}}"
+                                         class="rounded-circle user_img_msg">
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="input-group">
+                            <textarea name="" class="form-control type_msg"
+                                      placeholder="Type your message..."></textarea>
+                            <div class="input-group-append">
+                                <span class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.12.0/moment.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.6/angular.min.js"></script>
+
+<script src="/js/script.js"></script>
+
+
 </html>
