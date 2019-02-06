@@ -1,4 +1,4 @@
-<div class="container-fluid">
+<div class="container-fluid chat-page">
     <div class="row">
         <div class="col-3 bg-dark h-100 pt-5">
             <div class="chat">
@@ -8,7 +8,7 @@
                             <li ng-click="openChatDetails(key)" ng-cloak ng-class="recentUser.activeSession? 'active' : ''" ng-repeat="(key,recentUser) in listOfRecentChats">
                                 <div class="d-flex bd-highlight">
                                     <div class="img_cont">
-                                        <img src="{{recentUser.userImage}}"
+                                        <img ng-src="{{recentUser.userImage}}"
                                              class="rounded-circle user_img">
                                         <span class="online_icon"></span>
                                     </div>
@@ -23,15 +23,19 @@
                 </div>
             </div>
         </div>
+        <div class="logout_div">
+            <button ng-click="logoutUser()" class="btn btn-sm btn-danger float-right">Logout</button>
+            <br>
+        </div>
         <div class="col-9 bg-light h-100 w-100 pt-5">
             <div class="chat">
                 <div class="card">
 
-                    <div class="card-body msg_card_body">
+                    <div class="sidenav card-body msg_card_body" ng-scrollbars ng-scrollbars-config="scrollbarConfig" id="mySidenav">
                         <div ng-cloak ng-repeat="msg in listOfRecentChats[activeChatUserId].chatArray">
                             <div class="d-flex justify-content-start mb-4" ng-if="msg.direction === 'sent'">
                                 <div class="img_cont_msg">
-                                    <img src="{{currentUserDetails.userImage}}"
+                                    <img ng-src="{{currentUserDetails.userImage}}"
                                          class="rounded-circle user_img_msg">
                                 </div>
                                 <div class="msg_cotainer">
@@ -46,7 +50,7 @@
                                     <span class="msg_time_send">{{msg.time}}</span>
                                 </div>
                                 <div class="img_cont_msg">
-                                    <img src="{{listOfRecentChats[activeChatUserId].userImage}}"
+                                    <img ng-src="{{listOfRecentChats[activeChatUserId].userImage}}"
                                          class="rounded-circle user_img_msg">
                                 </div>
                             </div>

@@ -93,4 +93,8 @@ let chatApp = angular.module('chatApp', ['ui.router', 'angular-growl', 'ngScroll
             $rootScope.accessToken = null;
         }
     }]);
-;
+
+chatApp.config(['growlProvider', function (growlProvider) {
+    growlProvider.globalTimeToLive(5000);
+    growlProvider.globalPosition('bottom-right');
+}]);

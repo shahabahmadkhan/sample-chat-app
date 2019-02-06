@@ -1,6 +1,14 @@
 angular.module('chatApp').controller('chatPageController',
-    ['$scope', '$rootScope', '$window', '$location', '$http', 'growl',
-        function ($scope, $rootScope, $window, $location, $http, growl) {
+    ['$scope', '$rootScope', '$window', '$state', '$http', 'growl',
+        function ($scope, $rootScope, $window, $state, $http, growl) {
+
+            let user = angular.fromJson(window.localStorage['user_info']);
+            if (user && user.userId) {
+                //all ok
+            }else {
+                clearCookiesAndLogout();
+                $state.go('home');
+            }
 
             // $scope.name = null;
             // let user = angular.fromJson(window.localStorage['user_info']);
@@ -23,6 +31,11 @@ angular.module('chatApp').controller('chatPageController',
                     $scope.listOfRecentChats[key].activeSession = true;
                 }
 
+            };
+
+            $scope.logoutUser = function(){
+                clearCookiesAndLogout();
+                $state.go('home');
             };
             $scope.listOfRecentChats = {
                 'idxyz':
@@ -98,7 +111,7 @@ angular.module('chatApp').controller('chatPageController',
 
 
             $scope.$on('$destroy', function (event) {
-                if (socket) {
+                if (window.socket) {
                     socket.removeAllListeners();
                 }
             });
