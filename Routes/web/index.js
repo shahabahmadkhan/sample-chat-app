@@ -10,18 +10,22 @@ const rootHandler = (request, h) => {
         current_title: current_title
     });
 };
-let webURLs = ['','chat'];
 
 let webRoutesArray = [];
 
-webURLs.forEach(function(url){
-    webRoutesArray.push(
-        { method: 'GET', path: '/'+url,
-            options: {
-                handler: rootHandler
-            }
+webRoutesArray.push(
+    {
+        method: 'GET', path: '/',
+        options: {
+            handler: rootHandler
         }
-    )
-})
+    },
+    {
+        method: 'GET', path: '/chat',
+        options: {
+            handler: rootHandler
+        }
+    }
+)
 
 module.exports = webRoutesArray;

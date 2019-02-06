@@ -9,8 +9,10 @@
   "author": "Shahab Ahmad Khan",
   "license": "ISC",
   "dependencies": {
+    "angular": "^1.7.7",
     "async": "^2.6.1",
     "boom": "^7.3.0",
+    "bower": "^1.8.8",
     "ejs": "^2.6.1",
     "good": "^8.1.2",
     "hapi": "^18.1.0",
