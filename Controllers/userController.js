@@ -2,7 +2,7 @@
 const async = require('async');
 const bcrypt = require('bcrypt');
 const userService = require('../Services').Users;
-const chatService = require('../Services').Chats;
+const commonController = require('./commonController');
 
 const TokenManager = require('../Utils/TokenManager');
 
@@ -35,7 +35,9 @@ const loginUser = (data, callback) => {
     let userFound = false;
     let accessToken = null;
     let successLogin = false;
-    let updatedUserDetails = {};
+    let updatedUserDetails = {
+        availableUsers : []
+    };
 
     async.series([
         function (cb) {
@@ -86,43 +88,28 @@ const loginUser = (data, callback) => {
         },
         function (cb) {
             //get Distinct Users for recent chat list;
-            let distinctUserIds = [];
-            async.auto({
-                'checkForSender': function (internalCB) {
-                    let criteria = {
-                        from_user_id: userFound._id
-                    };
-                    chatService.getDistinctValues('to_user_id', criteria, function (err, result) {
-                        if (result && result.length) {
-                            result.forEach(function (userId) {
-                                userId = userId.toString();
-                                if (distinctUserIds.indexOf(userId) === -1) {
-                                    distinctUserIds.push(userId)
-                                }
-                            })
-                        }
-                        internalCB()
-                    })
-                },
-                'checkForReceiver': function (internalCB) {
-                    let criteria = {
-                        to_user_id: userFound._id
-                    };
-                    chatService.getDistinctValues('from_user_id', criteria, function (err, result) {
-                        if (result && result.length) {
-                            result.forEach(function (userId) {
-                                userId = userId.toString();
-                                if (distinctUserIds.indexOf(userId) === -1) {
-                                    distinctUserIds.push(userId)
-                                }
-                            })
-                        }
-                        internalCB()
-                    })
+            commonController.getRecentChatArray(userFound._id, function (err, recentChatUserList) {
+                updatedUserDetails.recentChatUserList = recentChatUserList || [];
+                cb()
+            })
+        },
+        function (cb) {
+            let criteria = {
+                _id: {$ne : userFound._id} // all other ids except yours
+            };
+            let projection = {
+                userFullName: 1,
+                username: 1
+            };
+            userService.getUser(criteria,projection,{lean:true}, function (err, results) {
+                if (err){
+                    cb(err)
+                }else {
+                    if (results && results.length){
+                        updatedUserDetails.availableUsers = results;
+                    }
+                    cb();
                 }
-            }, function (err) {
-                updatedUserDetails.recentCharArray = distinctUserIds;
-                cb(err);
             })
         }
     ], function (err, data) {
