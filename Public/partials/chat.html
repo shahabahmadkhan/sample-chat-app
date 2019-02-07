@@ -17,6 +17,13 @@
                                     </div>
                                 </div>
                             </li>
+                            <li>
+                                <div class="d-flex bd-highlight">
+                                    <div class="user_info">
+                                        <span><button class="btn btn-success">New</button></span>
+                                    </div>
+                                </div>
+                            </li>
                         </ui>
                     </div>
                 </div>
@@ -59,13 +66,17 @@
                     </div>
 
                     <div class="card-footer">
-                        <div class="input-group">
-                            <textarea name="" class="form-control type_msg"
-                                      placeholder="Type your message..."></textarea>
-                            <div class="input-group-append">
-                                <span class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></span>
+                        <form>
+                            <div class="input-group">
+                                <input type="text" ng-model="newChatText" class="form-control type_msg"
+                                       placeholder="Type your message...">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-primary" ng-click="sendMsg()" type="submit">Send</button>                                </div>
                             </div>
-                        </div>
+
+
+                        </form>
+
                     </div>
                 </div>
             </div>

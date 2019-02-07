@@ -3,12 +3,15 @@ angular.module('chatApp').controller('chatPageController',
         function ($scope, $rootScope, $window, $state, $http, growl) {
             $scope.listOfRecentChats = {};
             $scope.availableUsers = {};
+            $scope.newChatText = null;
+            $scope.activeChatUserId = null;
+            
             let userInfoData = angular.fromJson(window.localStorage['user_info']);
             if (userInfoData && userInfoData.userDetails.user_id) {
-                console.log('userInfoData.userDetails',userInfoData.userDetails)
+                console.log('userInfoData.userDetails', userInfoData.userDetails)
                 //all ok
                 $scope.availableUsers = userInfoData.userDetails.availableUsers;
-                if (userInfoData.userDetails.recentChatUserList && userInfoData.userDetails.recentChatUserList.length){
+                if (userInfoData.userDetails.recentChatUserList && userInfoData.userDetails.recentChatUserList.length) {
                     userInfoData.userDetails.recentChatUserList.forEach(function (user_id) {
                         $scope.listOfRecentChats[user_id] = $scope.availableUsers[user_id];
                     })
@@ -17,9 +20,54 @@ angular.module('chatApp').controller('chatPageController',
                 clearCookiesAndLogout();
                 $state.go('home');
             }
-            console.log('$scope.listOfRecentChats',$scope.listOfRecentChats)
-            $scope.currentUserDetails = userInfoData;
-            $scope.activeChatUserId = null;
+
+            function sendChatMsg(username, chatMsg) {
+                let userId = $scope.availableUsers[username]._id;
+                $scope.listOfRecentChats[userId] = $scope.availableUsers[username];
+                let chatMsgObj = {
+                    chatTxt: chatMsg,
+                    direction: 'sent',
+                    time: moment(new Date()).fromNow()
+                };
+                $scope.listOfRecentChats[userId].chatArray.push(chatMsgObj);
+                $scope.openChatDetails(userId);
+                $scope.newChatText = null;
+            }
+
+            function sendChatMsgViaUserId(userId, chatMsg) {
+                let chatMsgObj = {
+                    chatTxt: chatMsg,
+                    direction: 'sent',
+                    time: moment(new Date()).fromNow()
+                };
+                $scope.listOfRecentChats[userId].chatArray.push(chatMsgObj);
+                $scope.newChatText = null;
+            }
+
+            $scope.sendMsg = function () {
+                if ($scope.newChatText.trim().indexOf('@') === 0) {
+                    //it is referring to a particular username from availableUserArray
+                    let username = $scope.newChatText.split(' ')[0].trim().split('@')[1];
+                    if ($scope.availableUsers.hasOwnProperty(username)) {
+                        //start a new chat session and send the first msg there
+                        let chat_msg = $scope.newChatText.replace('@' + username, '');
+                        sendChatMsg(username, chat_msg);
+                    } else {
+                        growl.error('User: ' + username + ' Not Found')
+                    }
+                } else {
+                    //when already active session is there
+                    if ($scope.activeChatUserId) {
+                        //all ok
+                        sendChatMsgViaUserId($scope.activeChatUserId,$scope.newChatText);
+                        //perform send msg task via socket
+                    } else {
+                        growl.error('Please enter @username to start a chat');
+                    }
+                }
+            };
+
+            $scope.currentUserDetails = userInfoData.userDetails;
             $scope.openChatDetails = function (key) {
                 if ($scope.listOfRecentChats.hasOwnProperty(key)) {
                     if ($scope.activeChatUserId) {
@@ -28,14 +76,13 @@ angular.module('chatApp').controller('chatPageController',
                     $scope.activeChatUserId = key;
                     $scope.listOfRecentChats[key].activeSession = true;
                 }
-
             };
+
 
             $scope.logoutUser = function () {
                 clearCookiesAndLogout();
                 $state.go('home');
             };
-
 
 
             $scope.listOfRecentChats2 = {

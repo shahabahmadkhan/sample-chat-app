@@ -73,7 +73,8 @@ const loginUser = (data, callback) => {
                                 updatedUserDetails = {
                                     user_id : userFound._id,
                                     username: userFound.username,
-                                    userFullName: userFound.userFullName
+                                    userFullName: userFound.userFullName,
+                                    userImage: userFound.userImage
                                 };
                                 cb();
                             }
@@ -112,7 +113,7 @@ const loginUser = (data, callback) => {
                         results.forEach(function (userData) {
                             userData.chatArray = [];
                             userData.activeSession = false;
-                            availableUsersObj[userData._id] = userData;
+                            availableUsersObj[userData.username] = userData;
                         });
                         updatedUserDetails.availableUsers = availableUsersObj;
                     }

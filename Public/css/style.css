@@ -144,6 +144,7 @@ body,html{
     margin-right: 20px;
 }
 .msg_cotainer{
+    min-width: 100px;
     margin-top: auto;
     margin-bottom: auto;
     margin-left: 10px;
@@ -272,4 +273,8 @@ body,html{
     margin-bottom: 10px;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+}
+
+.chat-page .card {
+    background: #100e16!important;
 }
