@@ -71,6 +71,7 @@ const loginUser = (data, callback) => {
                             } else {
                                 accessToken = output && output.accessToken || null;
                                 updatedUserDetails = {
+                                    user_id : userFound._id,
                                     username: userFound.username,
                                     userFullName: userFound.userFullName
                                 };
@@ -99,14 +100,21 @@ const loginUser = (data, callback) => {
             };
             let projection = {
                 userFullName: 1,
-                username: 1
+                username: 1,
+                userImage: 1
             };
             userService.getUser(criteria,projection,{lean:true}, function (err, results) {
                 if (err){
                     cb(err)
                 }else {
                     if (results && results.length){
-                        updatedUserDetails.availableUsers = results;
+                        let availableUsersObj = {};
+                        results.forEach(function (userData) {
+                            userData.chatArray = [];
+                            userData.activeSession = false;
+                            availableUsersObj[userData._id] = userData;
+                        });
+                        updatedUserDetails.availableUsers = availableUsersObj;
                     }
                     cb();
                 }

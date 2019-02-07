@@ -6,12 +6,14 @@ let defaultUsersArray = [
     {
         username: 'shahab',
         password : '098098',
-        userFullName : 'Shahab Khan'
+        userFullName : 'Shahab Khan',
+        userImage : 'http://i.pravatar.cc/150?u=fake@pravatar.com'
     },
     {
         username: 'zeba',
         password : '098098',
-        userFullName : 'Zeba HR'
+        userFullName : 'Zeba HR',
+        userImage : 'http://i.pravatar.cc/150?u=fake1@pravatar.com'
     }
 ];
 

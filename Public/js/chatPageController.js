@@ -1,43 +1,44 @@
 angular.module('chatApp').controller('chatPageController',
     ['$scope', '$rootScope', '$window', '$state', '$http', 'growl',
         function ($scope, $rootScope, $window, $state, $http, growl) {
-
-            let user = angular.fromJson(window.localStorage['user_info']);
-            if (user && user.userId) {
+            $scope.listOfRecentChats = {};
+            $scope.availableUsers = {};
+            let userInfoData = angular.fromJson(window.localStorage['user_info']);
+            if (userInfoData && userInfoData.userDetails.user_id) {
+                console.log('userInfoData.userDetails',userInfoData.userDetails)
                 //all ok
-            }else {
+                $scope.availableUsers = userInfoData.userDetails.availableUsers;
+                if (userInfoData.userDetails.recentChatUserList && userInfoData.userDetails.recentChatUserList.length){
+                    userInfoData.userDetails.recentChatUserList.forEach(function (user_id) {
+                        $scope.listOfRecentChats[user_id] = $scope.availableUsers[user_id];
+                    })
+                }
+            } else {
                 clearCookiesAndLogout();
                 $state.go('home');
             }
-
-            // $scope.name = null;
-            // let user = angular.fromJson(window.localStorage['user_info']);
-            // if (user && user.userDetails && user.userDetails.name) {
-            //     $scope.name = user.userDetails.name;
-            // } else {
-            //     //clearCookiesAndLogout();
-            // }
-
-            $scope.currentUserDetails = {
-                userId: 'id2',
-                userFullName: 'Shahab Ahmad Khan',
-                userImage: 'http://i.pravatar.cc/150?u=fake5@pravatar.com'
-            };
-            $scope.activeChatUserId = 'idxyz';
-            $scope.openChatDetails = function(key){
-                if ($scope.listOfRecentChats.hasOwnProperty(key)){
-                    $scope.listOfRecentChats[$scope.activeChatUserId].activeSession = false;
+            console.log('$scope.listOfRecentChats',$scope.listOfRecentChats)
+            $scope.currentUserDetails = userInfoData;
+            $scope.activeChatUserId = null;
+            $scope.openChatDetails = function (key) {
+                if ($scope.listOfRecentChats.hasOwnProperty(key)) {
+                    if ($scope.activeChatUserId) {
+                        $scope.listOfRecentChats[$scope.activeChatUserId].activeSession = false;
+                    }
                     $scope.activeChatUserId = key;
                     $scope.listOfRecentChats[key].activeSession = true;
                 }
 
             };
 
-            $scope.logoutUser = function(){
+            $scope.logoutUser = function () {
                 clearCookiesAndLogout();
                 $state.go('home');
             };
-            $scope.listOfRecentChats = {
+
+
+
+            $scope.listOfRecentChats2 = {
                 'idxyz':
                     {
                         userId: 'idxyz',

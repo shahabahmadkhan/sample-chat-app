@@ -19,7 +19,12 @@ let clearCookiesAndLogout = function () {
     //window.location.href = "/";
 };
 
+$(document).ready(function () {
+    console.log('document ready>>>')
+});
+
 let verifyCurrentSession = (token, callback) => {
+    return callback();
     $.ajax({
         url: baseAPIurl + 'getUser',
         type: 'GET',
@@ -49,7 +54,12 @@ let angularUIStates = {
         templateUrl: "partials/chat.html",
         controller: 'chatPageController'
     }
-}
+};
+let config = {
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
+    }
+};
 
 let chatApp = angular.module('chatApp', ['ui.router', 'angular-growl', 'ngScrollbars']).config(['$locationProvider', '$stateProvider', '$urlRouterProvider', 'ScrollBarsProvider', function ($locationProvider, $stateProvider, $urlRouterProvider, ScrollBarsProvider) {
     $locationProvider.html5Mode({requireBase: false, enabled: true});
@@ -77,7 +87,6 @@ let chatApp = angular.module('chatApp', ['ui.router', 'angular-growl', 'ngScroll
                     globalSafeApply($rootScope, function () {
                         $rootScope.currentUserDetails = userInfoData.userDetails;
                         $rootScope.accessToken = userInfoData.accessToken;
-                        $state.go('chat')
                     })
                 } else {
                     globalSafeApply($rootScope, function () {
