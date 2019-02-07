@@ -7,6 +7,9 @@ const mongoose = require('mongoose');
 const Ejs = require('ejs');
 const Boom = require('boom');
 const HapiSwagger = require('hapi-swagger');
+const BootstrapDataUtil = require('./Utils/BootstrapData');
+const AuthBearer = require('hapi-auth-bearer-token');
+const TokenManager = require('./Utils/TokenManager');
 
 const Routes = require('./Routes');
 const Pack = require('./package');
@@ -53,8 +56,29 @@ const console_options = {
                 title: 'Chat App API',
                 version: Pack.version,
             },
+            grouping: 'tags',
             host: APP_CONSTANTS.SERVER[process.env.NODE_ENV + '_HOST']
         };
+
+        await server.register(AuthBearer)
+        //Define Authentication strategy
+        server.auth.strategy('simple', 'bearer-access-token', {
+            allowMultipleHeaders: true,
+            accessTokenName: 'accessToken',
+            validate: async (request, token, h) => {
+                return new Promise(resolve => {
+                    TokenManager.verifyToken(token, function (error, response) {
+                        let isValid = false;
+                        let credentials = {token};
+                        if (response && response.valid) {
+                            isValid = response && response.valid || false;
+                            credentials = {token: token, userData: response.userData};
+                        }
+                        resolve({isValid, credentials});
+                    });
+                })
+            }
+        });
 
         await server.register([
             Inert,
@@ -94,8 +118,11 @@ const console_options = {
         await server.start();
 
         // Once started, connect to Mongo through Mongoose
-        mongoose.connect(MONGO_URI, {useNewUrlParser:true}).then(() => {
+        mongoose.connect(MONGO_URI, {useNewUrlParser: true, useCreateIndex: true}).then(() => {
             console.log(`Connected to Mongo server`);
+            BootstrapDataUtil.bootstrapDefaultUserData(function (err, msg) {
+                console.log(err || msg)
+            })
         }, err => {
             console.log(err)
         });

@@ -1,1 +1,3 @@
-module.exorts = []; //TODO add API Routes here
+let allAPIs = require('./user');
+
+module.exports = allAPIs; //TODO add API Routes here

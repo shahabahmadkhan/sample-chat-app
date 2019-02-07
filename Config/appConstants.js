@@ -5,6 +5,7 @@ const SERVER = {
     PORTS: {
         HAPI: 3000
     },
+    JWT_SECRET_KEY : 'supersecretkeyToBeIn$ertedHere',
     dev_HOST: 'localhost:3000',
     dev_DOMAIN: 'localhost:3000'
 };
@@ -17,9 +18,67 @@ let swaggerDefaultResponseMessages = [
     {code: 500, message: 'Internal Server Error'}
 ];
 
+let STATUS_MSG = {
+    ERROR: {
+        INVALID_USER_PASS: {
+            statusCode: 401,
+            type: 'INVALID_USER_PASS',
+            message: 'Invalid username or password'
+        },
+        IMP_ERROR: {
+            statusCode: 500,
+            message: 'Implementation Error',
+            type: 'IMP_ERROR'
+        },
+        NOT_FOUND: {
+            statusCode: 400,
+            message: 'User Not Found',
+            type: 'NOT_FOUND'
+        },
+        UNAUTHORIZED: {
+            statusCode: 401,
+            message: 'You are not authorized to perform this action',
+            type: 'UNAUTHORIZED'
+        },
+        TOKEN_ALREADY_EXPIRED: {
+            statusCode: 401,
+            message: 'Token Already Expired',
+            type: 'TOKEN_ALREADY_EXPIRED'
+        },
+        INVALID_TOKEN: {
+            statusCode: 401,
+            message: 'Invalid token provided',
+            type: 'INVALID_TOKEN'
+        }
+
+    },
+    SUCCESS: {
+        CREATED: {
+            statusCode: 201,
+            message: 'Created Successfully',
+            type: 'CREATED'
+        },
+        LOGIN: {
+            statusCode: 200,
+            message: 'Logged In Successfully',
+            type: 'LOGIN'
+        },
+        DEFAULT: {
+            statusCode: 200,
+            message: 'Success',
+            type: 'DEFAULT'
+        },
+        LOGOUT: {
+            statusCode: 200,
+            message: 'Logged Out Successfully',
+            type: 'LOGOUT'
+        }
+    }
+};
 
 const APP_CONSTANTS = {
     SERVER,
+    STATUS_MSG,
     swaggerDefaultResponseMessages
 };
 
