@@ -2,6 +2,7 @@
 const async = require('async');
 const bcrypt = require('bcrypt');
 const userService = require('../Services').Users;
+const chatService = require('../Services').Chats;
 
 const TokenManager = require('../Utils/TokenManager');
 
@@ -82,6 +83,47 @@ const loginUser = (data, callback) => {
             } else {
                 cb(APP_CONSTANTS.STATUS_MSG.ERROR.NOT_FOUND)
             }
+        },
+        function (cb) {
+            //get Distinct Users for recent chat list;
+            let distinctUserIds = [];
+            async.auto({
+                'checkForSender': function (internalCB) {
+                    let criteria = {
+                        from_user_id: userFound._id
+                    };
+                    chatService.getDistinctValues('to_user_id', criteria, function (err, result) {
+                        if (result && result.length) {
+                            result.forEach(function (userId) {
+                                userId = userId.toString();
+                                if (distinctUserIds.indexOf(userId) === -1) {
+                                    distinctUserIds.push(userId)
+                                }
+                            })
+                        }
+                        internalCB()
+                    })
+                },
+                'checkForReceiver': function (internalCB) {
+                    let criteria = {
+                        to_user_id: userFound._id
+                    };
+                    chatService.getDistinctValues('from_user_id', criteria, function (err, result) {
+                        if (result && result.length) {
+                            result.forEach(function (userId) {
+                                userId = userId.toString();
+                                if (distinctUserIds.indexOf(userId) === -1) {
+                                    distinctUserIds.push(userId)
+                                }
+                            })
+                        }
+                        internalCB()
+                    })
+                }
+            }, function (err) {
+                updatedUserDetails.recentCharArray = distinctUserIds;
+                cb(err);
+            })
         }
     ], function (err, data) {
         if (err) {
@@ -96,7 +138,7 @@ function getUserViaId(userId, cb) {
     let criteria = {
         _id: userId
     };
-    let projection = {_id: 1, userFullName: 1, username: 1};
+    let projection = {_id: 1, userFullName: 1, username: 1, chatStartedWith: 1};
     let option = {
         lean: true
     };

@@ -6,8 +6,7 @@ const Schema = mongoose.Schema;
 const userModel = new Schema({
     username: { type: String, required: true, index: { unique: true } },
     userFullName : {type: String, required: true},
-    password: { type: String, required: true },
-    chatStartedWith : [String]
+    password: { type: String, required: true }
 });
 
 module.exports = mongoose.model('User', userModel);

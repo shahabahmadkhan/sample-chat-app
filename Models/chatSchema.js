@@ -10,7 +10,7 @@ const chatModel = new Schema({
     to_user_id: {
         type: Schema.Types.ObjectId, ref: 'users', required:true
     },
-    readFlag : { type: Boolean, required: true },
+    readFlag : { type: Boolean, default: false }, // By default the msg will be unread
     txtMsg : {type: String, required: true},
     createdAt : { type: Date, default: Date.now},
 });

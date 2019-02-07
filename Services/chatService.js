@@ -7,6 +7,10 @@ let getChats = function (criteria, projection, options, callback) {
     Models.Chats.find(criteria, projection, options, callback);
 };
 
+let getDistinctValues = function(field,criteria,callback){
+    Models.Chats.distinct(field,criteria,callback)
+};
+
 //Insert Chat in DB
 let createChat = function (objToSave, callback) {
     new Models.Chats(objToSave).save(callback)
@@ -21,5 +25,6 @@ let updateChat = function (criteria, dataToSet, options, callback) {
 module.exports = {
     getChats,
     createChat,
+    getDistinctValues,
     updateChat
 };
