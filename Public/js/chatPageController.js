@@ -11,6 +11,13 @@ angular.module('chatApp').controller('chatPageController',
                 connectSocketServer();
             }
 
+            function scrollChatToBottom(){
+                $("#msg_container_base").mCustomScrollbar("update");
+                setTimeout(function(){
+                    $("#msg_container_base").mCustomScrollbar("scrollTo","bottom");
+                },1000);
+            }
+
             socket.on("reconnect", function() {
                 // do not rejoin from here, since the socket.id token and/or rooms are still
                 // not available.
@@ -48,6 +55,7 @@ angular.module('chatApp').controller('chatPageController',
                     if ($scope.activeChatUserId == null){
                         growl.success('New Msg From : ' + $scope.availableUsers[data.from_username].userFullName)
                     }
+                    scrollChatToBottom();
                 })
             });
 
@@ -78,6 +86,9 @@ angular.module('chatApp').controller('chatPageController',
                         }
                     })
                 }
+                scrollChatToBottom();
+
+
 
             }
 
@@ -104,6 +115,8 @@ angular.module('chatApp').controller('chatPageController',
                         }
                     })
                 }
+                scrollChatToBottom();
+
             }
 
             $scope.sendMsgEventHandler = function () {

@@ -221,6 +221,11 @@ body,html{
     .contacts_card{
         margin-bottom: 15px !important;
     }
+    .img_cont,.user_img {
+        height: 32px;
+        width: 32px;
+    }
+
 }
 
 
