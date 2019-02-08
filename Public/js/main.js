@@ -80,7 +80,7 @@ let config = {
     }
 };
 
-let chatApp = angular.module('chatApp', ['ui.router', 'angular-growl', 'ngScrollbars']).config(['$locationProvider', '$stateProvider', '$urlRouterProvider', 'ScrollBarsProvider', function ($locationProvider, $stateProvider, $urlRouterProvider, ScrollBarsProvider) {
+let chatApp = angular.module('chatApp', ['ui.router', 'angular-growl', 'ngScrollbars', 'angularMoment']).config(['$locationProvider', '$stateProvider', '$urlRouterProvider', 'ScrollBarsProvider', function ($locationProvider, $stateProvider, $urlRouterProvider, ScrollBarsProvider) {
     $locationProvider.html5Mode({requireBase: false, enabled: true});
     ScrollBarsProvider.defaults = {
         autoHideScrollbar: false,

@@ -1,6 +1,6 @@
 angular.module('chatApp').controller('chatPageController',
-    ['$scope', '$rootScope', '$window', '$state', '$http', 'growl',
-        function ($scope, $rootScope, $window, $state, $http, growl) {
+    ['$scope', '$rootScope', '$window', '$state', '$http', 'growl', 'moment',
+        function ($scope, $rootScope, $window, $state, $http, growl, moment) {
             $scope.listOfRecentChats = {};
             $scope.availableUsers = {};
             $scope.newChatText = null;
@@ -15,7 +15,7 @@ angular.module('chatApp').controller('chatPageController',
                 $("#msg_container_base").mCustomScrollbar("update");
                 setTimeout(function(){
                     $("#msg_container_base").mCustomScrollbar("scrollTo","bottom");
-                },1000);
+                },10);
             }
 
             socket.on("reconnect", function() {
@@ -50,7 +50,7 @@ angular.module('chatApp').controller('chatPageController',
                 let chatMsgObj = {
                     chatTxt: chatMsg,
                     direction: 'sent',
-                    time: moment(new Date()).fromNow()
+                    createdAt: new Date()
                 };
                 $scope.listOfRecentChats[username].chatArray.push(chatMsgObj);
                 if (openChatFlag){
@@ -187,6 +187,10 @@ angular.module('chatApp').controller('chatPageController',
                     socket.removeAllListeners();
                 }
             });
+
+            $scope.startNewChat = function () {
+                $scope.activeChatUsername = null;
+            }
         }
     ]
 );

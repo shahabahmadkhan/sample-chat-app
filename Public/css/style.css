@@ -84,7 +84,7 @@ body,html{
     cursor: pointer;
 }
 .active{
-    background-color: rgba(0,0,0,0.3);
+    background : #90cad9;
 }
 .user_img{
     height: 70px;
@@ -283,4 +283,8 @@ body,html{
 
 .chat-page .card {
     background: #100e16!important;
+}
+
+.contacts li:not(:last-child):hover {
+    background: #90cad9;
 }

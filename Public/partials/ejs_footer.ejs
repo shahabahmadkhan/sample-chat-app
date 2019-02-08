@@ -10,6 +10,8 @@
 <script src="bower_components/ng-scrollbars/dist/scrollbars.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.0/socket.io.slim.js"></script>
 <script src="bower_components/moment/min/moment.min.js"></script>
+<script src="bower_components/angular-moment/angular-moment.js"></script>
+
 <!--/libraries-->
 
 <!--logic-->
@@ -17,5 +19,19 @@
 <script src="/js/chatPageController.js"></script>
 <script src="/js/loginController.js"></script>
 <!--/logic-->
+
+<script src="https://www.gstatic.com/firebasejs/5.8.2/firebase.js"></script>
+<script>
+    // Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyCszcZYjcmroqJ_NsaJC6GuEBblhv1DLak",
+        authDomain: "sample-chat-app-53ecd.firebaseapp.com",
+        databaseURL: "https://sample-chat-app-53ecd.firebaseio.com",
+        projectId: "sample-chat-app-53ecd",
+        storageBucket: "",
+        messagingSenderId: "448813997266"
+    };
+    firebase.initializeApp(config);
+</script>
 
 </html>

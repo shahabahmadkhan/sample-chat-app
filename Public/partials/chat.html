@@ -20,7 +20,7 @@
                             <li>
                                 <div class="d-flex bd-highlight">
                                     <div class="user_info">
-                                        <span><button class="btn btn-success">New</button></span>
+                                        <span><button ng-click="startNewChat()" class="btn btn-success">New</button></span>
                                     </div>
                                 </div>
                             </li>
@@ -46,14 +46,14 @@
                                 </div>
                                 <div class="msg_cotainer">
                                     {{msg.chatTxt}}
-                                    <span class="msg_time">{{msg.time}}</span>
+                                    <span class="msg_time" am-time-ago="msg.createdAt"></span>
                                 </div>
                             </div>
 
                             <div class="d-flex justify-content-end mb-4" ng-if="msg.direction === 'received'">
                                 <div class="msg_cotainer_send">
                                     {{msg.chatTxt}}
-                                    <span class="msg_time_send">{{msg.time}}</span>
+                                    <span class="msg_time_send" am-time-ago="msg.createdAt"></span>
                                 </div>
                                 <div class="img_cont_msg">
                                     <img ng-src="{{listOfRecentChats[activeChatUsername].userImage}}"
