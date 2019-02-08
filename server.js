@@ -10,6 +10,7 @@ const HapiSwagger = require('hapi-swagger');
 const BootstrapDataUtil = require('./Utils/BootstrapData');
 const AuthBearer = require('hapi-auth-bearer-token');
 const TokenManager = require('./Utils/TokenManager');
+const SocketManager = require('./Utils/SocketManager');
 
 const Routes = require('./Routes');
 const Pack = require('./package');
@@ -122,7 +123,8 @@ const console_options = {
             console.log(`Connected to Mongo server`);
             BootstrapDataUtil.bootstrapDefaultUserData(function (err, msg) {
                 console.log(err || msg)
-            })
+            });
+            SocketManager.connectSocket(server);
         }, err => {
             console.log(err)
         });

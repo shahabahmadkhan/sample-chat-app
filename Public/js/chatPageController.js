@@ -5,10 +5,16 @@ angular.module('chatApp').controller('chatPageController',
             $scope.availableUsers = {};
             $scope.newChatText = null;
             $scope.activeChatUserId = null;
-            
+
+            if (socket) {
+                socket.removeAllListeners();
+                connectSocketServer();
+            }
+
+            let accessToken = window.localStorage['user_info'] && window.localStorage['user_info'] != "undefined" && JSON.parse(window.localStorage['user_info']).accessToken || null;
+
             let userInfoData = angular.fromJson(window.localStorage['user_info']);
             if (userInfoData && userInfoData.userDetails.user_id) {
-                console.log('userInfoData.userDetails', userInfoData.userDetails)
                 //all ok
                 $scope.availableUsers = userInfoData.userDetails.availableUsers;
                 if (userInfoData.userDetails.recentChatUserList && userInfoData.userDetails.recentChatUserList.length) {
@@ -32,6 +38,19 @@ angular.module('chatApp').controller('chatPageController',
                 $scope.listOfRecentChats[userId].chatArray.push(chatMsgObj);
                 $scope.openChatDetails(userId);
                 $scope.newChatText = null;
+                let dataToEmit = {
+                    token : accessToken,
+                    receiver_id : userId,
+                    chatMsg : chatMsg
+                };
+                socket.emit('chatMsgFromClient',dataToEmit, function (response) {
+                    if (response.type === 'error'){
+                        growl.error(response.msg)
+                    }else {
+                        growl.success(response.msg)
+
+                    }
+                })
             }
 
             function sendChatMsgViaUserId(userId, chatMsg) {
@@ -44,7 +63,7 @@ angular.module('chatApp').controller('chatPageController',
                 $scope.newChatText = null;
             }
 
-            $scope.sendMsg = function () {
+            $scope.sendMsgEventHandler = function () {
                 if ($scope.newChatText.trim().indexOf('@') === 0) {
                     //it is referring to a particular username from availableUserArray
                     let username = $scope.newChatText.split(' ')[0].trim().split('@')[1];

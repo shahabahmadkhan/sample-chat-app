@@ -1,5 +1,16 @@
 let baseAPIurl = '/api/';
 
+let socket = io('');
+
+let connectSocketServer = () => {
+    let accessToken = window.localStorage['user_info'] && window.localStorage['user_info'] != "undefined" && JSON.parse(window.localStorage['user_info']).accessToken || null;
+    if (accessToken && socket) {
+        socket.connect();
+        socket.emit('clientAuth', {token: accessToken});
+    }
+};
+
+
 let globalSafeApply = ($scope, globalFn) => {
     $scope.safeApply = function (fn) {
         let phase = this.$root && this.$root.$$phase;
@@ -20,7 +31,7 @@ let clearCookiesAndLogout = function () {
 };
 
 $(document).ready(function () {
-    console.log('document ready>>>')
+
 });
 
 let verifyCurrentSession = (token, callback) => {
