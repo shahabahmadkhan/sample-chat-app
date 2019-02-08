@@ -12,6 +12,12 @@ let connectSocketServer = () => {
     sendSocketAuth()
 };
 
+const globalErrorCallback = (response) => {
+    console.log('globalerrorcallback', response)
+    if (response.status == 401) {
+       // clearCookiesAndLogout();
+    }
+}
 
 let globalSafeApply = ($scope, globalFn) => {
     $scope.safeApply = function (fn) {

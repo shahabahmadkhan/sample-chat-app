@@ -4,7 +4,7 @@ angular.module('chatApp').controller('chatPageController',
             $scope.listOfRecentChats = {};
             $scope.availableUsers = {};
             $scope.newChatText = null;
-            $scope.activeChatUserId = null;
+            $scope.activeChatUsername = null;
 
             if (socket) {
                 socket.removeAllListeners();
@@ -19,86 +19,43 @@ angular.module('chatApp').controller('chatPageController',
             }
 
             socket.on("reconnect", function() {
-                // do not rejoin from here, since the socket.id token and/or rooms are still
-                // not available.
                 console.log("Reconnecting");
                 sendSocketAuth()
             });
 
             let accessToken = window.localStorage['user_info'] && window.localStorage['user_info'] != "undefined" && JSON.parse(window.localStorage['user_info']).accessToken || null;
 
-            let userInfoData = angular.fromJson(window.localStorage['user_info']);
-            if (userInfoData && userInfoData.userDetails.user_id) {
-                //all ok
-                $scope.availableUsers = userInfoData.userDetails.availableUsers;
-                if (userInfoData.userDetails.recentChatUserList && userInfoData.userDetails.recentChatUserList.length) {
-                    userInfoData.userDetails.recentChatUserList.forEach(function (user_id) {
-                        $scope.listOfRecentChats[user_id] = $scope.availableUsers[user_id];
-                    })
-                }
-            } else {
-                clearCookiesAndLogout();
-                $state.go('home');
-            }
             socket.on('incomingChatMsgForReceiver', function (data) {
                 $scope.$apply(function () {
-                    if (!$scope.listOfRecentChats.hasOwnProperty(data.from_user_id)) {
-                        $scope.listOfRecentChats[data.from_user_id] = $scope.availableUsers[data.from_username];
+                    if (!$scope.listOfRecentChats.hasOwnProperty(data.from_username)) {
+                        $scope.listOfRecentChats[data.from_username] = $scope.availableUsers[data.from_username];
                     }
                     //fill up the recent chat
                     let chatMsgObj = {
-                        chatTxt: data.txtMsg,
+                        chatTxt: data.chatTxt,
                         direction: 'received',
                         time: moment(new Date()).fromNow()
                     };
-                    $scope.listOfRecentChats[data.from_user_id].chatArray.push(chatMsgObj);
-                    if ($scope.activeChatUserId == null){
+                    $scope.listOfRecentChats[data.from_username].chatArray.push(chatMsgObj);
+                    if ($scope.activeChatUsername == null){
                         growl.success('New Msg From : ' + $scope.availableUsers[data.from_username].userFullName)
                     }
                     scrollChatToBottom();
                 })
             });
 
-
-            function sendChatMsg(username, chatMsg) {
+            function sendChatMsg(username, chatMsg, openChatFlag) {
                 let userId = $scope.availableUsers[username]._id;
-                $scope.listOfRecentChats[userId] = $scope.availableUsers[username];
+                $scope.listOfRecentChats[username] = $scope.availableUsers[username];
                 let chatMsgObj = {
                     chatTxt: chatMsg,
                     direction: 'sent',
                     time: moment(new Date()).fromNow()
                 };
-                $scope.listOfRecentChats[userId].chatArray.push(chatMsgObj);
-                $scope.openChatDetails(userId);
-                $scope.newChatText = null;
-                let dataToEmit = {
-                    token: accessToken,
-                    receiver_id: userId,
-                    chatMsg: chatMsg
-                };
-                if (socket) {
-                    socket.emit('chatMsgFromClient', dataToEmit, function (response) {
-                        if (response.type === 'error') {
-                            growl.error(response.msg)
-                        } else {
-                            growl.success(response.msg)
-
-                        }
-                    })
+                $scope.listOfRecentChats[username].chatArray.push(chatMsgObj);
+                if (openChatFlag){
+                    $scope.openChatDetails(username);
                 }
-                scrollChatToBottom();
-
-
-
-            }
-
-            function sendChatMsgViaUserId(userId, chatMsg) {
-                let chatMsgObj = {
-                    chatTxt: chatMsg,
-                    direction: 'sent',
-                    time: moment(new Date()).fromNow()
-                };
-                $scope.listOfRecentChats[userId].chatArray.push(chatMsgObj);
                 $scope.newChatText = null;
                 let dataToEmit = {
                     token: accessToken,
@@ -126,15 +83,15 @@ angular.module('chatApp').controller('chatPageController',
                     if ($scope.availableUsers.hasOwnProperty(username)) {
                         //start a new chat session and send the first msg there
                         let chat_msg = $scope.newChatText.replace('@' + username, '');
-                        sendChatMsg(username, chat_msg);
+                        sendChatMsg(username, chat_msg, true);
                     } else {
                         growl.error('User: ' + username + ' Not Found')
                     }
                 } else {
                     //when already active session is there
-                    if ($scope.activeChatUserId) {
+                    if ($scope.activeChatUsername) {
                         //all ok
-                        sendChatMsgViaUserId($scope.activeChatUserId, $scope.newChatText);
+                        sendChatMsg($scope.activeChatUsername, $scope.newChatText, false);
                         //perform send msg task via socket
                     } else {
                         growl.error('Please enter @username to start a chat');
@@ -142,14 +99,79 @@ angular.module('chatApp').controller('chatPageController',
                 }
             };
 
+            let userInfoData = angular.fromJson(window.localStorage['user_info']);
             $scope.currentUserDetails = userInfoData.userDetails;
+
+            function fetchRecentChatUsers (){
+                $http({
+                    method: 'GET',
+                    headers: {'authorization': 'Bearer ' + JSON.parse(window.localStorage['user_info']).accessToken},
+                    config: config,
+                    url: baseAPIurl + 'chat/getRecentUserArray'
+                }).then(function successCallback(response) {
+                    console.log('response>>>',response)
+                    if (response.data.status == 'failure' || response.data.statusCode == 400) {
+                        growl.error(response.data.message, {ttl: 5000});
+                    } else {
+                        globalSafeApply($scope, function () {
+                            if (userInfoData && userInfoData.userDetails.user_id) {
+                                //all ok
+                                $scope.availableUsers = userInfoData.userDetails.availableUsers;
+                                if (response.data.recentChatArray){
+                                    userInfoData.userDetails.recentChatUserList = response.data.recentChatArray;
+                                }
+                                if (userInfoData.userDetails.recentChatUserList && userInfoData.userDetails.recentChatUserList.length) {
+                                    userInfoData.userDetails.recentChatUserList.forEach(function (username) {
+                                        $scope.listOfRecentChats[username] = $scope.availableUsers[username];
+                                    })
+                                }
+                            } else {
+                                clearCookiesAndLogout();
+                                $state.go('home');
+                            }
+                        })
+                        growl.success('Fetched Successfully',{ttl: 5000});
+
+
+                    }
+                }, globalErrorCallback);
+            }
+
+            fetchRecentChatUsers();
+
+            function fetchChatArrayViaREST(user_id){
+                console.log("fetching for>>>",user_id)
+                let dataToSend = {};
+                dataToSend.with_user_id = user_id;
+                $http({
+                    method: 'POST',
+                    data: dataToSend,
+                    withCredentials: true,
+                    headers: {'authorization': 'Bearer ' + JSON.parse(window.localStorage['user_info']).accessToken},
+                    config: config,
+                    url: baseAPIurl + 'chat/getPaginatedChat'
+                }).then(function successCallback(response) {
+                    console.log('response>>>',response)
+                    if (response.data.status == 'failure' || response.data.statusCode == 400) {
+                        growl.error(response.data.message, {ttl: 5000});
+                    } else {
+                       globalSafeApply($scope, function () {
+                           $scope.listOfRecentChats[$scope.activeChatUsername].chatArray = response.data.chatMsgArray;
+                       });
+                         growl.success('Fetched Successfully',{ttl: 5000});
+                    }
+                }, globalErrorCallback);
+            }
+
             $scope.openChatDetails = function (key) {
                 if ($scope.listOfRecentChats.hasOwnProperty(key)) {
-                    if ($scope.activeChatUserId) {
-                        $scope.listOfRecentChats[$scope.activeChatUserId].activeSession = false;
+                    if ($scope.activeChatUsername) {
+                        $scope.listOfRecentChats[$scope.activeChatUsername].activeSession = false;
                     }
-                    $scope.activeChatUserId = key;
+                    $scope.activeChatUsername = key;
                     $scope.listOfRecentChats[key].activeSession = true;
+                    fetchChatArrayViaREST($scope.availableUsers[$scope.activeChatUsername]._id);
+                    //TODO HIT API
                 }
             };
 
@@ -157,79 +179,6 @@ angular.module('chatApp').controller('chatPageController',
             $scope.logoutUser = function () {
                 clearCookiesAndLogout();
                 $state.go('home');
-            };
-
-
-            $scope.listOfRecentChats2 = {
-                'idxyz':
-                    {
-                        userId: 'idxyz',
-                        userFullName: 'Senior Manager',
-                        currentStatus: 'Online',
-                        activeSession: true,
-                        userImage: 'http://i.pravatar.cc/150?u=fake@pravatar.com',
-                        chatArray: [
-                            {
-                                chatTxt: 'Hi, How are you Sir?',
-                                direction: 'sent',
-                                time: moment(new Date(new Date().getTime() - (5 * 50 * 1000))).fromNow()
-                            },
-                            {
-                                chatTxt: 'Hi, Buddy i am good, How about You?',
-                                direction: 'received',
-                                time: moment(new Date(new Date().getTime() - (4.5 * 50 * 1000))).fromNow()
-                            },
-                            {
-                                chatTxt: 'I am good, This Chat App Is Cool.',
-                                direction: 'sent',
-                                time: moment(new Date(new Date().getTime() - (4 * 50 * 1000))).fromNow()
-                            },
-                            {
-                                chatTxt: 'Really? Thanks a lot.',
-                                direction: 'received',
-                                time: moment(new Date(new Date().getTime() - (3.5 * 50 * 1000))).fromNow()
-                            },
-                            {
-                                chatTxt: 'So hows everything else?',
-                                direction: 'sent',
-                                time: moment(new Date(new Date().getTime() - (3 * 50 * 1000))).fromNow()
-                            },
-                            {
-                                chatTxt: "All is well, Let's meet this weekend.",
-                                direction: 'received',
-                                time: moment(new Date(new Date().getTime() - (2.5 * 50 * 1000))).fromNow()
-                            },
-                            {
-                                chatTxt: 'Ahh.. I am not free this weekend, How about the next weekend?',
-                                direction: 'sent',
-                                time: moment(new Date(new Date().getTime() - (2 * 50 * 1000))).fromNow()
-                            },
-                            {
-                                chatTxt: "Cool, Let's do it.",
-                                direction: 'received',
-                                time: moment(new Date(new Date().getTime() - (1.5 * 50 * 1000))).fromNow()
-                            },
-                        ]
-                    },
-                'idabc': {
-                    userId: 'idabc',
-                    activeSession: false,
-                    userFullName: 'HR Manager',
-                    userImage: 'http://i.pravatar.cc/150?u=fake1@pravatar.com',
-                    chatArray: [
-                        {
-                            chatTxt: 'Yo,Wassup?',
-                            direction: 'sent',
-                            time: moment(new Date(new Date().getTime() - (5 * 50 * 1000))).fromNow()
-                        },
-                        {
-                            chatTxt: 'Yo, Doing Good',
-                            direction: 'received',
-                            time: moment(new Date(new Date().getTime() - (4.5 * 50 * 1000))).fromNow()
-                        }
-                    ]
-                }
-
             };
 
 

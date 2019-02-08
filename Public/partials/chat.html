@@ -38,7 +38,7 @@
                 <div class="card">
 
                     <div id="msg_container_base" class="sidenav card-body msg_card_body" ng-scrollbars ng-scrollbars-config="scrollbarConfig" id="mySidenav">
-                        <div ng-cloak ng-repeat="msg in listOfRecentChats[activeChatUserId].chatArray">
+                        <div ng-cloak ng-repeat="msg in listOfRecentChats[activeChatUsername].chatArray">
                             <div class="d-flex justify-content-start mb-4" ng-if="msg.direction === 'sent'">
                                 <div class="img_cont_msg">
                                     <img ng-src="{{currentUserDetails.userImage}}"
@@ -56,7 +56,7 @@
                                     <span class="msg_time_send">{{msg.time}}</span>
                                 </div>
                                 <div class="img_cont_msg">
-                                    <img ng-src="{{listOfRecentChats[activeChatUserId].userImage}}"
+                                    <img ng-src="{{listOfRecentChats[activeChatUsername].userImage}}"
                                          class="rounded-circle user_img_msg">
                                 </div>
                             </div>

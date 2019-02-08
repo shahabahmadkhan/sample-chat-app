@@ -29,7 +29,7 @@ const bootstrapDefaultUserData = function (callback) {
                     if (!err && count === 2){
                         alreadyBootstrappedFlag = true
                         //already bootstrapped
-                        //console.log('already bootstrapped');
+                        console.log('already bootstrapped');
                     }
                     cb()
                 })
@@ -38,12 +38,13 @@ const bootstrapDefaultUserData = function (callback) {
                 if (alreadyBootstrappedFlag){
                     return cb()
                 }else {
+                    console.log("bootstrapping user")
                     async.each(defaultUsersArray,function (userObj,internalCB) {
                         UniversalFunctions.hashPassword(userObj.password, function (err, hashedPassword) {
                             if (err){
                                 internalCB(err)
                             }else {
-                                userObj.password = hashedPassword; // password hasing of plain text
+                                userObj.password = hashedPassword; // password hashing of plain text
                                 userService.createUser(userObj,internalCB)
                             }
                         })

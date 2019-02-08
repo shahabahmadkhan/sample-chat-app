@@ -79,16 +79,22 @@ exports.connectSocket = function (server) {
             TokenManager.decodeToken(data.token, function (err, decodedData) {
                 if (!err && decodedData.id) {
                     //check receiver id and emit msg to him
+                    let dataToSave = {
+                        from_user_id: decodedData.id,
+                        to_user_id: data.receiver_id,
+                        chatTxt: data.chatMsg
+                    };
+                    process.emit('chatMsgReceived',dataToSave);
                     if (server.app.socketConnections.hasOwnProperty(data.receiver_id)
                         && server.app.socketConnections[data.receiver_id].socketIds) {
                         let dataToEmit = {
                             from_user_id: decodedData.id,
                             from_username : decodedData.username,
-                            txtMsg: data.chatMsg
+                            chatTxt: data.chatMsg
                         };
                         console.log('emitting>>>',dataToEmit)
                         emitToAuthorizedClients(data.receiver_id, 'incomingChatMsgForReceiver', dataToEmit);
-                        //TODO insert chat into DB
+
                         callback({type:'success', msg: 'Successfully sent'})
 
                     } else {

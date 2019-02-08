@@ -134,7 +134,7 @@ function getUserViaId(userId, cb) {
     let criteria = {
         _id: userId
     };
-    let projection = {_id: 1, userFullName: 1, username: 1, chatStartedWith: 1};
+    let projection = {_id: 1, userFullName: 1, username: 1};
     let option = {
         lean: true
     };

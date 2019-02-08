@@ -3,23 +3,18 @@
 const Joi = require('joi');
 const async = require('async');
 
-const userController = require('../../Controllers/userController');
+const commonController = require('../../Controllers/commonController');
 
 const chatController = require('../../Controllers/chatController');
-const TokenManager = require('../../Utils/TokenManager');
 const UniversalFunctions = require('../../Utils/UniversalFunctions');
 
 
 const getRecentUserArray = (request, h) => {
     if (request.auth.isAuthenticated && request.auth.credentials.userData.id) {
         return new Promise(resolve => {
-            userController.getUserViaId(request.auth.credentials.userData.id, function (err, dataToSend) {
-                if (err) {
-                    resolve(err)
-                } else {
-                    resolve({statusCode: 200, status: 'success', recentCharArray: dataToSend.chatStartedWith})
-                }
-            })
+            commonController.getRecentChatArray(request.auth.credentials.userData.id, function (err, recentChatUserList) {
+                resolve({statusCode: 200, status: 'success', recentChatArray: recentChatUserList || []})
+            });
         })
     } else {
         return {message: 'Unauthorized', statusCode: 401, status: 'failure'}
