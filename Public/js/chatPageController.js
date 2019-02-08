@@ -11,6 +11,13 @@ angular.module('chatApp').controller('chatPageController',
                 connectSocketServer();
             }
 
+            socket.on("reconnect", function() {
+                // do not rejoin from here, since the socket.id token and/or rooms are still
+                // not available.
+                console.log("Reconnecting");
+                sendSocketAuth()
+            });
+
             let accessToken = window.localStorage['user_info'] && window.localStorage['user_info'] != "undefined" && JSON.parse(window.localStorage['user_info']).accessToken || null;
 
             let userInfoData = angular.fromJson(window.localStorage['user_info']);
@@ -26,6 +33,24 @@ angular.module('chatApp').controller('chatPageController',
                 clearCookiesAndLogout();
                 $state.go('home');
             }
+            socket.on('incomingChatMsgForReceiver', function (data) {
+                $scope.$apply(function () {
+                    if (!$scope.listOfRecentChats.hasOwnProperty(data.from_user_id)) {
+                        $scope.listOfRecentChats[data.from_user_id] = $scope.availableUsers[data.from_username];
+                    }
+                    //fill up the recent chat
+                    let chatMsgObj = {
+                        chatTxt: data.txtMsg,
+                        direction: 'received',
+                        time: moment(new Date()).fromNow()
+                    };
+                    $scope.listOfRecentChats[data.from_user_id].chatArray.push(chatMsgObj);
+                    if ($scope.activeChatUserId == null){
+                        growl.success('New Msg From : ' + $scope.availableUsers[data.from_username].userFullName)
+                    }
+                })
+            });
+
 
             function sendChatMsg(username, chatMsg) {
                 let userId = $scope.availableUsers[username]._id;
@@ -39,18 +64,21 @@ angular.module('chatApp').controller('chatPageController',
                 $scope.openChatDetails(userId);
                 $scope.newChatText = null;
                 let dataToEmit = {
-                    token : accessToken,
-                    receiver_id : userId,
-                    chatMsg : chatMsg
+                    token: accessToken,
+                    receiver_id: userId,
+                    chatMsg: chatMsg
                 };
-                socket.emit('chatMsgFromClient',dataToEmit, function (response) {
-                    if (response.type === 'error'){
-                        growl.error(response.msg)
-                    }else {
-                        growl.success(response.msg)
+                if (socket) {
+                    socket.emit('chatMsgFromClient', dataToEmit, function (response) {
+                        if (response.type === 'error') {
+                            growl.error(response.msg)
+                        } else {
+                            growl.success(response.msg)
 
-                    }
-                })
+                        }
+                    })
+                }
+
             }
 
             function sendChatMsgViaUserId(userId, chatMsg) {
@@ -61,6 +89,21 @@ angular.module('chatApp').controller('chatPageController',
                 };
                 $scope.listOfRecentChats[userId].chatArray.push(chatMsgObj);
                 $scope.newChatText = null;
+                let dataToEmit = {
+                    token: accessToken,
+                    receiver_id: userId,
+                    chatMsg: chatMsg
+                };
+                if (socket) {
+                    socket.emit('chatMsgFromClient', dataToEmit, function (response) {
+                        if (response.type === 'error') {
+                            growl.error(response.msg)
+                        } else {
+                            growl.success(response.msg)
+
+                        }
+                    })
+                }
             }
 
             $scope.sendMsgEventHandler = function () {
@@ -78,7 +121,7 @@ angular.module('chatApp').controller('chatPageController',
                     //when already active session is there
                     if ($scope.activeChatUserId) {
                         //all ok
-                        sendChatMsgViaUserId($scope.activeChatUserId,$scope.newChatText);
+                        sendChatMsgViaUserId($scope.activeChatUserId, $scope.newChatText);
                         //perform send msg task via socket
                     } else {
                         growl.error('Please enter @username to start a chat');

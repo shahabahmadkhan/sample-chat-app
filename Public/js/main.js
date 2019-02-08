@@ -2,12 +2,14 @@ let baseAPIurl = '/api/';
 
 let socket = io('');
 
-let connectSocketServer = () => {
+let sendSocketAuth = function(){
     let accessToken = window.localStorage['user_info'] && window.localStorage['user_info'] != "undefined" && JSON.parse(window.localStorage['user_info']).accessToken || null;
-    if (accessToken && socket) {
-        socket.connect();
-        socket.emit('clientAuth', {token: accessToken});
-    }
+    socket.emit('clientAuth', {token: accessToken});
+}
+
+let connectSocketServer = () => {
+    socket.connect();
+    sendSocketAuth()
 };
 
 

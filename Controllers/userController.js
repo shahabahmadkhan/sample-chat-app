@@ -63,7 +63,7 @@ const loginUser = (data, callback) => {
                         successLogin = true;
                         let tokenData = {
                             id: userFound._id,
-                            admin: userFound.admin
+                            username: userFound.username
                         };
                         TokenManager.setToken(tokenData, function (err, output) {
                             if (err) {

@@ -27,14 +27,14 @@ exports.connectSocket = function (server) {
                     socket.to(socketIdToSend).emit(event, emitData);
                 })
             } else {
-                if (socketIdsToSend[0])
+                if (socketIdsToSend[0]){
                     socket.to(socketIdsToSend[0]).emit(event, emitData);
+                }
             }
         }
     }
 
     socket.on('connection', function (socket) {
-        console.log('socket connected', socket.id)
 
         socket.on('clientAuth', function (data) {
             //Update SocketConnections
@@ -58,7 +58,6 @@ exports.connectSocket = function (server) {
                     }
                 })
             } else {
-                console.log('msgFromClient', data);
                 socket.emit('disconnectFromServer', {message: 'Invalid Token', performAction: 'DISCONNECT'});
             }
         });
@@ -68,7 +67,6 @@ exports.connectSocket = function (server) {
         });
 
         socket.on('chatMsgFromClient', function (data, callback) {
-            console.log('incoming data>>',data)
             if (!data.hasOwnProperty('token')) {
                 return callback({type:'error', msg: 'Token is required!'});
             }
@@ -82,12 +80,14 @@ exports.connectSocket = function (server) {
                 if (!err && decodedData.id) {
                     //check receiver id and emit msg to him
                     if (server.app.socketConnections.hasOwnProperty(data.receiver_id)
-                        && server.app.socketConnections[data.receiver_id].length) {
+                        && server.app.socketConnections[data.receiver_id].socketIds) {
                         let dataToEmit = {
                             from_user_id: decodedData.id,
-                            txtMsg: data.txtMsg
+                            from_username : decodedData.username,
+                            txtMsg: data.chatMsg
                         };
-                        emitToAuthorizedClients(data.receiver_id, 'chatMsgEvent', dataToEmit);
+                        console.log('emitting>>>',dataToEmit)
+                        emitToAuthorizedClients(data.receiver_id, 'incomingChatMsgForReceiver', dataToEmit);
                         //TODO insert chat into DB
                         callback({type:'success', msg: 'Successfully sent'})
 

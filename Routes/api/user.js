@@ -88,7 +88,7 @@ module.exports = [
             validate: {
                 payload: {
                     username: Joi.string()
-                        .required().min(5)
+                        .required().min(3)
                         .description('Username'),
                     password: Joi.string().required().min(6).description('password')
                 }
