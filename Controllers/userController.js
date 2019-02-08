@@ -8,6 +8,13 @@ const TokenManager = require('../Utils/TokenManager');
 
 const APP_CONSTANTS = require('../Config/appConstants');
 
+const webpush = require('web-push');
+
+const publicVapidKey = APP_CONSTANTS.SERVER.PUBLIC_VAPID_KEY;
+const privateVapidKey = APP_CONSTANTS.SERVER.PRIVATE_VAPID_KEY;
+
+// Replace with your email
+webpush.setVapidDetails('mailto:me@shahab.in', publicVapidKey, privateVapidKey);
 
 const findUserByUsername = (username, cb) => {
     let userFound = false;
@@ -36,7 +43,7 @@ const loginUser = (data, callback) => {
     let accessToken = null;
     let successLogin = false;
     let updatedUserDetails = {
-        availableUsers : []
+        availableUsers: []
     };
 
     async.series([
@@ -71,7 +78,7 @@ const loginUser = (data, callback) => {
                             } else {
                                 accessToken = output && output.accessToken || null;
                                 updatedUserDetails = {
-                                    user_id : userFound._id,
+                                    user_id: userFound._id,
                                     username: userFound.username,
                                     userFullName: userFound.userFullName,
                                     userImage: userFound.userImage
@@ -97,18 +104,18 @@ const loginUser = (data, callback) => {
         },
         function (cb) {
             let criteria = {
-                _id: {$ne : userFound._id} // all other ids except yours
+                _id: {$ne: userFound._id} // all other ids except yours
             };
             let projection = {
                 userFullName: 1,
                 username: 1,
                 userImage: 1
             };
-            userService.getUser(criteria,projection,{lean:true}, function (err, results) {
-                if (err){
+            userService.getUser(criteria, projection, {lean: true}, function (err, results) {
+                if (err) {
                     cb(err)
-                }else {
-                    if (results && results.length){
+                } else {
+                    if (results && results.length) {
                         let availableUsersObj = {};
                         results.forEach(function (userData) {
                             userData.chatArray = [];
@@ -151,7 +158,67 @@ function getUserViaId(userId, cb) {
     });
 }
 
+const updateSubscription = (userId, subscriptionData, callback) => {
+    let status = 0;
+    async.auto({
+        'checkIfAlreadyExisted': function (cb) {
+            let criteria = {
+                _id: userId
+            };
+            let projection = {subscriptionData: 1};
+            userService.getUser(criteria, projection, {lean: true}, function (err, result) {
+                if (err) {
+                    cb(err)
+                } else {
+                    if (result && result[0] && result[0].subscriptionData && result[0].subscriptionData.length) {
+                        status = 1;
+                    }
+                    cb();
+                }
+            })
+        },
+        'updateSubscriptionData': ['checkIfAlreadyExisted', function (res, cb) {
+            let criteria = {
+                _id: userId
+            };
+            let dataToUpdate = {
+                subscriptionData
+            };
+            userService.updateUser(criteria, dataToUpdate, {new: true}, cb)
+        }]
+    }, function(err) {
+        if (err) {
+            callback(err)
+        } else {
+            callback(null, status)
+        }
+    })
+
+};
+
+process.on('sendWebPush', function (dataToSave) {
+    let criteria = {
+        _id: dataToSave.to_user_id
+    };
+    let projection = {subscriptionData:1};
+    userService.getUser(criteria,projection,{lean:true}, function (err, result) {
+        if (err){
+            console.log('err',err)
+        }else {
+            let subscriptionData = result && result[0] && result[0].subscriptionData || null;
+            let subscription = JSON.parse(subscriptionData);
+            const payload = JSON.stringify({ title: 'Sample Chat App', msgFromServer : dataToSave.chatTxt});
+
+            webpush.sendNotification(subscription, payload).catch(error => {
+                console.error(error.stack);
+            });
+
+        }
+    })
+})
+
 module.exports = {
     loginUser,
+    updateSubscription,
     getUserViaId
 };

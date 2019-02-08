@@ -12,9 +12,19 @@ const AuthBearer = require('hapi-auth-bearer-token');
 const TokenManager = require('./Utils/TokenManager');
 const SocketManager = require('./Utils/SocketManager');
 
+const APP_CONSTANTS = require('./Config/appConstants');
+
+
+const webpush = require('web-push');
+
+const publicVapidKey = APP_CONSTANTS.SERVER.PUBLIC_VAPID_KEY;
+const privateVapidKey = APP_CONSTANTS.SERVER.PRIVATE_VAPID_KEY;
+
+// Replace with your email
+webpush.setVapidDetails('mailto:me@shahab.in', publicVapidKey, privateVapidKey);
+
 const Routes = require('./Routes');
 const Pack = require('./package');
-const APP_CONSTANTS = require('./Config/appConstants');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'dev'; // By default dev env variable
 
@@ -114,12 +124,35 @@ const console_options = {
             }
         });
 
+        // let subscriberHandler = (request) => {
+        //     return new Promise(resolve => {
+        //         let subscription = request.payload;
+        //         const payload = JSON.stringify({ title: 'Sample Chat App' });
+        //         console.log(subscription);
+        //
+        //         webpush.sendNotification(subscription, payload).catch(error => {
+        //             console.error(error.stack);
+        //         });
+        //
+        //         resolve({statusCode: 200, status: 'success'})
+        //     })
+        // };
+        //
+        // Routes.push({
+        //     method : 'POST',
+        //     path : '/subscribe',
+        //     options : {
+        //         handler : subscriberHandler
+        //     }
+        //
+        // })
+
         server.route(Routes);
 
         await server.start();
 
         // Once started, connect to Mongo through Mongoose
-        mongoose.connect(MONGO_URI, {useNewUrlParser: true, useCreateIndex: true}).then(() => {
+        mongoose.connect(MONGO_URI, {useNewUrlParser: true, useCreateIndex: true, useFindAndModify: false}).then(() => {
             console.log(`Connected to Mongo server`);
             BootstrapDataUtil.bootstrapDefaultUserData(function (err, msg) {
                 console.log(err || msg)

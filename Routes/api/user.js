@@ -6,6 +6,15 @@ const async = require('async');
 const userController = require('../../Controllers/userController');
 const TokenManager = require('../../Utils/TokenManager');
 const UniversalFunctions = require('../../Utils/UniversalFunctions');
+const APP_CONSTANTS = require('../../Config/appConstants');
+
+const webpush = require('web-push');
+
+const publicVapidKey = APP_CONSTANTS.SERVER.PUBLIC_VAPID_KEY;
+const privateVapidKey = APP_CONSTANTS.SERVER.PRIVATE_VAPID_KEY;
+
+// Replace with your email
+webpush.setVapidDetails('mailto:me@shahab.in', publicVapidKey, privateVapidKey);
 
 const postLogin = async (request, h) => {
     if (!request.payload.username || !request.payload.password) {
@@ -78,7 +87,72 @@ const getUserInfo = (request, h) => {
     }
 }
 
+const notificationHandler = (request, h) => {
+    return new Promise(resolve => {
+            const subscription = dummyDb.subscription //get subscription from your databse here.
+        const message = 'You got a new message'
+        webpush.sendNotification(subscription, message)
+        resolve({statusCode: 200, message: 'success'})
+    })
+};
+
+let subscriberHandler = (request) => {
+    return new Promise(resolve => {
+        if (request.auth.isAuthenticated && request.auth.credentials.userData.id) {
+            let subscription = JSON.parse(request.payload.subscription);
+            const payload = JSON.stringify({ title: 'Sample Chat App', msgFromServer : 'You are now subscribed to notification' });
+            console.log(subscription);
+
+            userController.updateSubscription(request.auth.credentials.userData.id, request.payload.subscription, function (err, status) {
+                //status == 1 (already existed), status == 0 not existed
+                if (err){
+                    console.log('err',err);
+                }else {
+                    if (status === 0){
+                        webpush.sendNotification(subscription, payload).catch(error => {
+                            console.error(error.stack);
+                        });
+                    }
+                }
+            });
+
+
+
+            resolve({statusCode: 200, status: 'success'})
+        }else {
+            return {message: 'Unauthorized', statusCode: 401, status: 'failure'}
+        }
+
+
+    })
+};
+
 module.exports = [
+    {
+        method: 'POST', path: '/api/user/subscribe', //using POST instead of get so as not to expose any critical data in the URI
+        options: {
+            handler: subscriberHandler,
+            auth: 'simple',
+            validate: {
+                headers: UniversalFunctions.authorizationHeaderObj,
+                payload: {
+                    subscription: Joi.string()
+                        .required()
+                        .description('subscription json string')
+                }
+            },
+            tags: ['chat', 'api'],
+            description: 'Find Chats'
+        }
+    },
+    {
+        method: 'GET', path: '/api/user/sendNotification',
+        options: {
+            handler: notificationHandler,
+            tags: ['user','api'],
+            description: 'WEb Push API'
+        }
+    },
     {
         method: ['POST'], path: '/api/user/login',
         options: {

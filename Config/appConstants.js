@@ -5,9 +5,12 @@ const SERVER = {
     PORTS: {
         HAPI: 3000
     },
-    JWT_SECRET_KEY : 'supersecretkeyToBeIn$ertedHere',
+    JWT_SECRET_KEY: 'supersecretkeyToBeIn$ertedHere',
     dev_HOST: 'localhost:3000',
-    dev_DOMAIN: 'localhost:3000'
+    dev_DOMAIN: 'localhost:3000',
+    PUBLIC_VAPID_KEY: 'BLh8Z0nwpZHpGtgT6LxcS3rV568doumSj0_2n78PQKjBCBQIjgjF3YkskL4Vi1WMEF9wkmfMIIMHGei3gHSGr94',
+    PRIVATE_VAPID_KEY: 'ematnYA1WboLpMxqWD24n_KzD2__Tnm9m9ROVC2zcNI'
+
 };
 
 let swaggerDefaultResponseMessages = [

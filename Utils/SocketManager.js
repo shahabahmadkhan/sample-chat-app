@@ -1,6 +1,7 @@
 'use strict';
 
 const TokenManager = require('./TokenManager');
+const async = require('async');
 
 exports.connectSocket = function (server) {
     console.log('Initializing Socket Server')
@@ -27,7 +28,7 @@ exports.connectSocket = function (server) {
                     socket.to(socketIdToSend).emit(event, emitData);
                 })
             } else {
-                if (socketIdsToSend[0]){
+                if (socketIdsToSend[0]) {
                     socket.to(socketIdsToSend[0]).emit(event, emitData);
                 }
             }
@@ -62,19 +63,28 @@ exports.connectSocket = function (server) {
             }
         });
 
-        socket.on('disconnect', function () {
-            console.log('socket disconnected', this.id);
+        socket.on('pageFocusEvent', function (data) {
+            if (data && data.token) {
+                TokenManager.decodeToken(data.token, function (err, decodedData) {
+                    if (!err && decodedData.id) {
+                        if (server.app.socketConnections.hasOwnProperty(decodedData.id)) {
+                            server.app.socketConnections[decodedData.id].isTabActive = data.isTabActive;
+                        }
+                    }
+                })
+            }
         });
+
 
         socket.on('chatMsgFromClient', function (data, callback) {
             if (!data.hasOwnProperty('token')) {
-                return callback({type:'error', msg: 'Token is required!'});
+                return callback({type: 'error', msg: 'Token is required!'});
             }
             if (!data.hasOwnProperty('receiver_id')) {
-                return callback({type:'error', msg: 'Receiver Id is required!'});
+                return callback({type: 'error', msg: 'Receiver Id is required!'});
             }
             if (!data.hasOwnProperty('chatMsg')) {
-                return callback({type:'error', msg: 'Message Id is required!'});
+                return callback({type: 'error', msg: 'Message Id is required!'});
             }
             TokenManager.decodeToken(data.token, function (err, decodedData) {
                 if (!err && decodedData.id) {
@@ -84,28 +94,34 @@ exports.connectSocket = function (server) {
                         to_user_id: data.receiver_id,
                         chatTxt: data.chatMsg
                     };
-                    process.emit('chatMsgReceived',dataToSave);
+                    process.emit('chatMsgReceived', dataToSave);
+                    //check if receiver is online or not
+
                     if (server.app.socketConnections.hasOwnProperty(data.receiver_id)
                         && server.app.socketConnections[data.receiver_id].socketIds) {
                         let dataToEmit = {
                             from_user_id: decodedData.id,
-                            from_username : decodedData.username,
+                            from_username: decodedData.username,
                             chatTxt: data.chatMsg
                         };
-                        console.log('emitting>>>',dataToEmit)
                         emitToAuthorizedClients(data.receiver_id, 'incomingChatMsgForReceiver', dataToEmit);
+                        if (!!server.app.socketConnections[data.receiver_id].isTabActive){
+                            // already focused no need to send web push
+                        }else {
+                            process.emit('sendWebPush',dataToSave)
+                        }
 
-                        callback({type:'success', msg: 'Successfully sent'})
+                        callback({type: 'success', msg: 'Successfully sent'})
 
                     } else {
-                        callback({type: 'error', msg: 'Receiver Not Online'})
+                        callback({type: 'error', msg: 'Receiver Not Online'});
+                        process.emit('sendWebPush',dataToSave)
                     }
                 } else {
                     socket.emit('disconnectFromServer', {message: 'Invalid Token', performAction: 'DISCONNECT'});
                 }
             });
         });
-
 
         socket.emit('messageFromServer', {message: 'WELCOME TO SAMPLE CHAT APP', performAction: 'INFO'});
 

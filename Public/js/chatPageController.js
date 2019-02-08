@@ -11,19 +11,60 @@ angular.module('chatApp').controller('chatPageController',
                 connectSocketServer();
             }
 
-            function scrollChatToBottom(){
+            function scrollChatToBottom() {
                 $("#msg_container_base").mCustomScrollbar("update");
-                setTimeout(function(){
-                    $("#msg_container_base").mCustomScrollbar("scrollTo","bottom");
-                },10);
+                setTimeout(function () {
+                    $("#msg_container_base").mCustomScrollbar("scrollTo", "bottom");
+                }, 10);
             }
 
-            socket.on("reconnect", function() {
+            socket.on("reconnect", function () {
                 console.log("Reconnecting");
                 sendSocketAuth()
             });
 
             let accessToken = window.localStorage['user_info'] && window.localStorage['user_info'] != "undefined" && JSON.parse(window.localStorage['user_info']).accessToken || null;
+
+            if (accessToken) {
+
+                if ('serviceWorker' in navigator) {
+                    console.log('Registering service worker');
+
+                    run().catch(error => console.error(error));
+                }
+
+                async function run() {
+                    console.log('Registering service worker');
+                    const registration = await navigator.serviceWorker.register('/worker.js', {scope: '/'});
+                    console.log('Registered service worker');
+
+                    console.log('Registering push');
+                    const subscription = await registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        // The `urlBase64ToUint8Array()` function is the same as in
+                        // https://www.npmjs.com/package/web-push#using-vapid-key-for-applicationserverkey
+                        applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+                    });
+                    console.log('Registered push', subscription);
+
+                    console.log('Sending push');
+                    let dataToSend = {};
+                    dataToSend.subscription = JSON.stringify(subscription);
+                    $http({
+                        method: 'POST',
+                        data: dataToSend,
+                        withCredentials: true,
+                        headers: {'authorization': 'Bearer ' + JSON.parse(window.localStorage['user_info']).accessToken},
+                        config: config,
+                        url: baseAPIurl + 'user/subscribe'
+                    }).then(function successCallback(response) {
+                        console.log('subscribe response>>>', response)
+
+                    }, globalErrorCallback);
+
+                    console.log('Sent push');
+                }
+            }
 
             socket.on('incomingChatMsgForReceiver', function (data) {
                 $scope.$apply(function () {
@@ -37,7 +78,7 @@ angular.module('chatApp').controller('chatPageController',
                         time: moment(new Date()).fromNow()
                     };
                     $scope.listOfRecentChats[data.from_username].chatArray.push(chatMsgObj);
-                    if ($scope.activeChatUsername == null){
+                    if ($scope.activeChatUsername == null) {
                         growl.success('New Msg From : ' + $scope.availableUsers[data.from_username].userFullName)
                     }
                     scrollChatToBottom();
@@ -53,7 +94,7 @@ angular.module('chatApp').controller('chatPageController',
                     createdAt: new Date()
                 };
                 $scope.listOfRecentChats[username].chatArray.push(chatMsgObj);
-                if (openChatFlag){
+                if (openChatFlag) {
                     $scope.openChatDetails(username);
                 }
                 $scope.newChatText = null;
@@ -75,6 +116,26 @@ angular.module('chatApp').controller('chatPageController',
                 scrollChatToBottom();
 
             }
+
+            $window.isTabActive = true;
+
+            $window.onfocus = function () {
+                isTabActive = true;
+                let dataToEmit = {
+                    token: accessToken,
+                    isTabActive: true
+                };
+                socket.emit('pageFocusEvent', dataToEmit)
+            };
+
+            $window.onblur = function () {
+                isTabActive = false;
+                let dataToEmit = {
+                    token: accessToken,
+                    isTabActive: false
+                };
+                socket.emit('pageFocusEvent', dataToEmit)
+            };
 
             $scope.sendMsgEventHandler = function () {
                 if ($scope.newChatText.trim().indexOf('@') === 0) {
@@ -102,14 +163,14 @@ angular.module('chatApp').controller('chatPageController',
             let userInfoData = angular.fromJson(window.localStorage['user_info']);
             $scope.currentUserDetails = userInfoData.userDetails;
 
-            function fetchRecentChatUsers (){
+            function fetchRecentChatUsers() {
                 $http({
                     method: 'GET',
                     headers: {'authorization': 'Bearer ' + JSON.parse(window.localStorage['user_info']).accessToken},
                     config: config,
                     url: baseAPIurl + 'chat/getRecentUserArray'
                 }).then(function successCallback(response) {
-                    console.log('response>>>',response)
+                    console.log('response>>>', response)
                     if (response.data.status == 'failure' || response.data.statusCode == 400) {
                         growl.error(response.data.message, {ttl: 5000});
                     } else {
@@ -117,7 +178,7 @@ angular.module('chatApp').controller('chatPageController',
                             if (userInfoData && userInfoData.userDetails.user_id) {
                                 //all ok
                                 $scope.availableUsers = userInfoData.userDetails.availableUsers;
-                                if (response.data.recentChatArray){
+                                if (response.data.recentChatArray) {
                                     userInfoData.userDetails.recentChatUserList = response.data.recentChatArray;
                                 }
                                 if (userInfoData.userDetails.recentChatUserList && userInfoData.userDetails.recentChatUserList.length) {
@@ -130,7 +191,7 @@ angular.module('chatApp').controller('chatPageController',
                                 $state.go('home');
                             }
                         })
-                        growl.success('Fetched Successfully',{ttl: 5000});
+                        growl.success('Fetched Successfully', {ttl: 5000});
 
 
                     }
@@ -139,8 +200,7 @@ angular.module('chatApp').controller('chatPageController',
 
             fetchRecentChatUsers();
 
-            function fetchChatArrayViaREST(user_id){
-                console.log("fetching for>>>",user_id)
+            function fetchChatArrayViaREST(user_id) {
                 let dataToSend = {};
                 dataToSend.with_user_id = user_id;
                 $http({
@@ -151,14 +211,14 @@ angular.module('chatApp').controller('chatPageController',
                     config: config,
                     url: baseAPIurl + 'chat/getPaginatedChat'
                 }).then(function successCallback(response) {
-                    console.log('response>>>',response)
+                    console.log('response>>>', response)
                     if (response.data.status == 'failure' || response.data.statusCode == 400) {
                         growl.error(response.data.message, {ttl: 5000});
                     } else {
-                       globalSafeApply($scope, function () {
-                           $scope.listOfRecentChats[$scope.activeChatUsername].chatArray = response.data.chatMsgArray;
-                       });
-                         growl.success('Fetched Successfully',{ttl: 5000});
+                        globalSafeApply($scope, function () {
+                            $scope.listOfRecentChats[$scope.activeChatUsername].chatArray = response.data.chatMsgArray;
+                        });
+                        growl.success('Fetched Successfully', {ttl: 5000});
                     }
                 }, globalErrorCallback);
             }
@@ -194,3 +254,4 @@ angular.module('chatApp').controller('chatPageController',
         }
     ]
 );
+

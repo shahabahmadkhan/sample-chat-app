@@ -126,3 +126,23 @@ chatApp.config(['growlProvider', function (growlProvider) {
     growlProvider.globalTimeToLive(5000);
     growlProvider.globalPosition('bottom-right');
 }]);
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/\-/g, '+')
+        .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+
+// Hard-coded, replace with your public key
+const publicVapidKey = 'BLh8Z0nwpZHpGtgT6LxcS3rV568doumSj0_2n78PQKjBCBQIjgjF3YkskL4Vi1WMEF9wkmfMIIMHGei3gHSGr94';
+
