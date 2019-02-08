@@ -206,12 +206,15 @@ process.on('sendWebPush', function (dataToSave) {
             console.log('err',err)
         }else {
             let subscriptionData = result && result[0] && result[0].subscriptionData || null;
-            let subscription = JSON.parse(subscriptionData);
-            const payload = JSON.stringify({ title: 'Sample Chat App', msgFromServer : dataToSave.chatTxt});
+            if (subscriptionData && subscriptionData.length){
+                let subscription = JSON.parse(subscriptionData);
+                const payload = JSON.stringify({ title: 'Sample Chat App', msgFromServer : dataToSave.chatTxt});
 
-            webpush.sendNotification(subscription, payload).catch(error => {
-                console.error(error.stack);
-            });
+                webpush.sendNotification(subscription, payload).catch(error => {
+                    console.error(error.stack);
+                });
+            }
+
 
         }
     })

@@ -81,6 +81,7 @@ angular.module('chatApp').controller('chatPageController',
                     if ($scope.activeChatUsername == null) {
                         growl.success('New Msg From : ' + $scope.availableUsers[data.from_username].userFullName)
                     }
+                    console.log('data',data)
                     scrollChatToBottom();
                 })
             });
@@ -125,7 +126,8 @@ angular.module('chatApp').controller('chatPageController',
                     token: accessToken,
                     isTabActive: true
                 };
-                socket.emit('pageFocusEvent', dataToEmit)
+                socket.emit('pageFocusEvent', dataToEmit);
+                console.log('focussed')
             };
 
             $window.onblur = function () {
@@ -135,6 +137,7 @@ angular.module('chatApp').controller('chatPageController',
                     isTabActive: false
                 };
                 socket.emit('pageFocusEvent', dataToEmit)
+                console.log('blurred')
             };
 
             $scope.sendMsgEventHandler = function () {
