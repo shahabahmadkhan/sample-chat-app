@@ -18,7 +18,7 @@ const production_config = {
     },
     redis : {
         URI: process.env.REDIS_HOST,
-        port: process.env.REDIS_PORT
+        port: process.env.REDIS_PORT || 9974 //9974 is redistogo port
     }
 };
 
