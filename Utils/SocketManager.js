@@ -64,22 +64,14 @@ exports.connectSocket = function (server) {
         });
 
         socket.on('pageFocusEvent', function (data) {
-            console.log('pageFocusEvent')
             if (data && data.token) {
                 TokenManager.decodeToken(data.token, function (err, decodedData) {
                     if (!err && decodedData.id) {
                         if (server.app.socketConnections.hasOwnProperty(decodedData.id)) {
                             server.app.socketConnections[decodedData.id].isTabActive = data.isTabActive;
-                            console.log('sttingpage focus to',data.isTabActive)
-                        }else {
-                            console.log('not setting coz id not there in socketconnection')
                         }
-                    }else {
-                        console.log('not setting focus>>>')
                     }
                 })
-            }else {
-                console.log('not setting focus due to token')
             }
         });
 

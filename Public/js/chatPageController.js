@@ -32,7 +32,6 @@ angular.module('chatApp').controller('chatPageController',
                     config: config,
                     url: baseAPIurl + 'chat/getRecentUserArray'
                 }).then(function successCallback(response) {
-                    console.log('response>>>', response)
                     if (response.data.status == 'failure' || response.data.statusCode == 400) {
                         growl.error(response.data.message, {ttl: 5000});
                     } else {
@@ -188,9 +187,17 @@ angular.module('chatApp').controller('chatPageController',
                     if ($scope.availableUsers.hasOwnProperty(username)) {
                         //start a new chat session and send the first msg there
                         let chat_msg = $scope.newChatText.replace('@' + username, '');
-                        sendChatMsg(username, chat_msg, true);
+                        if (chat_msg && chat_msg.length){
+                            sendChatMsg(username, chat_msg, true);
+                        }else {
+                            growl.error('Enter some text to send');
+                        }
                     } else {
-                        growl.error('User: ' + username + ' Not Found')
+                        if (username === $scope.currentUserDetails.username){
+                            growl.error('You cannot send msg to yourself')
+                        }else {
+                            growl.error('User: ' + username + ' Not Found')
+                        }
                     }
                 } else {
                     //when already active session is there

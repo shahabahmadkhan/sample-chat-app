@@ -35,7 +35,17 @@
         <div class="col-9 bg-light h-100 w-100 pt-5">
             <div class="chat">
                 <div class="card">
-                    <div id="overlayed_div_inside_msg_base_container" ng-show="(activeChatUsername === null)"> To start a chat write @username in the chat input box</div>
+                    <div id="overlayed_div_inside_msg_base_container" ng-show="(activeChatUsername === null)">
+                        To start a chat write @username in the chat input box
+                        <p>Following Usernames are available for chat :</p>
+                        <p>
+                            <ul>
+                        <li>@shahab</li>
+                        <li>@vikram</li>
+                        <li>@zeba</li>
+                    </ul>
+                        </p>
+                    </div>
 
                     <div id="msg_container_base" class="sidenav card-body msg_card_body" ng-scrollbars ng-scrollbars-config="scrollbarConfig" id="mySidenav">
                         <div ng-cloak ng-repeat="msg in listOfRecentChats[activeChatUsername].chatArray">
