@@ -1,12 +1,12 @@
 'use strict';
 
-let dbConfig = require('../Config/dbConfig');
+let redisConfig = require('../Config/dbConfig')[process.env.NODE_ENV + '_config'].redis;
 const APP_CONSTANTS = require('../Config/appConstants');
 let Jwt = require('jsonwebtoken');
 
 //Connect To Redis
 let redis = require('redis');
-let redisClient = redis.createClient(dbConfig.redis.port, dbConfig.redis.URI);
+let redisClient = redis.createClient(redisConfig.port, redisConfig.URI);
 redisClient.on('error', function (err) {
     console.log('Error ' + err);
 });
