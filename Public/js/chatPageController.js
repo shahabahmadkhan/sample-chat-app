@@ -25,7 +25,43 @@ angular.module('chatApp').controller('chatPageController',
 
             let accessToken = window.localStorage['user_info'] && window.localStorage['user_info'] != "undefined" && JSON.parse(window.localStorage['user_info']).accessToken || null;
 
+            function fetchRecentChatUsers() {
+                $http({
+                    method: 'GET',
+                    headers: {'authorization': 'Bearer ' + JSON.parse(window.localStorage['user_info']).accessToken},
+                    config: config,
+                    url: baseAPIurl + 'chat/getRecentUserArray'
+                }).then(function successCallback(response) {
+                    console.log('response>>>', response)
+                    if (response.data.status == 'failure' || response.data.statusCode == 400) {
+                        growl.error(response.data.message, {ttl: 5000});
+                    } else {
+                        globalSafeApply($scope, function () {
+                            if (userInfoData && userInfoData.userDetails.user_id) {
+                                //all ok
+                                $scope.availableUsers = userInfoData.userDetails.availableUsers;
+                                if (response.data.recentChatArray) {
+                                    userInfoData.userDetails.recentChatUserList = response.data.recentChatArray;
+                                }
+                                if (userInfoData.userDetails.recentChatUserList && userInfoData.userDetails.recentChatUserList.length) {
+                                    userInfoData.userDetails.recentChatUserList.forEach(function (username) {
+                                        $scope.listOfRecentChats[username] = $scope.availableUsers[username];
+                                    })
+                                }
+                            } else {
+                                clearCookiesAndLogout();
+                                $state.go('home');
+                            }
+                        })
+                        growl.success('Fetched Successfully', {ttl: 5000});
+
+
+                    }
+                }, globalErrorCallback);
+            }
+
             if (accessToken) {
+                fetchRecentChatUsers();
 
                 if ('serviceWorker' in navigator) {
                     console.log('Registering service worker');
@@ -65,6 +101,8 @@ angular.module('chatApp').controller('chatPageController',
                     console.log('Sent push');
                 }
             }
+
+
 
             socket.on('incomingChatMsgForReceiver', function (data) {
                 if ($scope.availableUsers.hasOwnProperty(data.from_username)){
@@ -167,44 +205,9 @@ angular.module('chatApp').controller('chatPageController',
             };
 
             let userInfoData = angular.fromJson(window.localStorage['user_info']);
-            $scope.currentUserDetails = userInfoData.userDetails;
-
-            function fetchRecentChatUsers() {
-                $http({
-                    method: 'GET',
-                    headers: {'authorization': 'Bearer ' + JSON.parse(window.localStorage['user_info']).accessToken},
-                    config: config,
-                    url: baseAPIurl + 'chat/getRecentUserArray'
-                }).then(function successCallback(response) {
-                    console.log('response>>>', response)
-                    if (response.data.status == 'failure' || response.data.statusCode == 400) {
-                        growl.error(response.data.message, {ttl: 5000});
-                    } else {
-                        globalSafeApply($scope, function () {
-                            if (userInfoData && userInfoData.userDetails.user_id) {
-                                //all ok
-                                $scope.availableUsers = userInfoData.userDetails.availableUsers;
-                                if (response.data.recentChatArray) {
-                                    userInfoData.userDetails.recentChatUserList = response.data.recentChatArray;
-                                }
-                                if (userInfoData.userDetails.recentChatUserList && userInfoData.userDetails.recentChatUserList.length) {
-                                    userInfoData.userDetails.recentChatUserList.forEach(function (username) {
-                                        $scope.listOfRecentChats[username] = $scope.availableUsers[username];
-                                    })
-                                }
-                            } else {
-                                clearCookiesAndLogout();
-                                $state.go('home');
-                            }
-                        })
-                        growl.success('Fetched Successfully', {ttl: 5000});
-
-
-                    }
-                }, globalErrorCallback);
+            if (userInfoData){
+                $scope.currentUserDetails = userInfoData.userDetails;
             }
-
-            fetchRecentChatUsers();
 
             function fetchChatArrayViaREST(user_id) {
                 let dataToSend = {};

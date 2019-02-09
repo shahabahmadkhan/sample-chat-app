@@ -28,7 +28,7 @@ const Pack = require('./package');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'dev'; // By default dev env variable
 
-const MONGO_URI = require('./Config/dbConfig')[process.env.NODE_ENV + '_config'].mongo.URI;
+const MONGO_URI = process.env.DATABASE_URL || require('./Config/dbConfig')[process.env.NODE_ENV + '_config'].mongo.URI;
 
 //Define server constant
 const server = new Hapi.Server({
@@ -123,29 +123,6 @@ const console_options = {
                 }
             }
         });
-
-        // let subscriberHandler = (request) => {
-        //     return new Promise(resolve => {
-        //         let subscription = request.payload;
-        //         const payload = JSON.stringify({ title: 'Sample Chat App' });
-        //         console.log(subscription);
-        //
-        //         webpush.sendNotification(subscription, payload).catch(error => {
-        //             console.error(error.stack);
-        //         });
-        //
-        //         resolve({statusCode: 200, status: 'success'})
-        //     })
-        // };
-        //
-        // Routes.push({
-        //     method : 'POST',
-        //     path : '/subscribe',
-        //     options : {
-        //         handler : subscriberHandler
-        //     }
-        //
-        // })
 
         server.route(Routes);
 
