@@ -129,15 +129,24 @@ const console_options = {
         await server.start();
 
         // Once started, connect to Mongo through Mongoose
-        mongoose.connect(MONGO_URI, {useNewUrlParser: true, useCreateIndex: true, useFindAndModify: false}).then(() => {
-            console.log(`Connected to Mongo server`);
-            BootstrapDataUtil.bootstrapDefaultUserData(function (err, msg) {
-                console.log(err || msg)
+        if (MONGO_URI) {
+            mongoose.connect(MONGO_URI, {
+                useNewUrlParser: true,
+                useCreateIndex: true,
+                useFindAndModify: false
+            }).then(() => {
+                console.log(`Connected to Mongo server`);
+                BootstrapDataUtil.bootstrapDefaultUserData(function (err, msg) {
+                    console.log(err || msg)
+                });
+                SocketManager.connectSocket(server);
+            }, err => {
+                console.log(err)
             });
-            SocketManager.connectSocket(server);
-        }, err => {
-            console.log(err)
-        });
+        } else {
+            console.log('MONGO_URI not defined');
+            process.exit(1)
+        }
 
         console.log(`Server running at: ${server.info.uri}`, 'Environment:' + process.env.NODE_ENV);
     }
