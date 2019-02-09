@@ -1,13 +1,13 @@
 # Sample Chat App By Shahab
 
-## Tech Stack
+## Tech Stack (you need to have it installed on your pc to run the app)
 
 * Node v9.5.0 or higher + NPM
 * Mongo v3.4.9 or higher
 * Redis v4.0 or higher
 * Bower v1.8.8
 
-##Pre-requisite
+##Prerequisite
 1) Make sure you have everything written above installed on your server/pc
 2) Make sure no other service is running on port 3000 // You can change this in appConstants 
 
@@ -15,7 +15,7 @@
 1) ``` cd sample-chat-app && npm install  ```
 2) ``` node server.js``` or  ``` nodemon```
 
-##Basic Info Regarding Project
+## Basic Info Regarding Project
 1) Three users are pre-bootstrapped in the database as soon as the application is run, the users & password can be found in Utils/BootstrapData.js file.
 2) After entering username and password on login/home screen, the user is redirected to /chat page.
 3) Since there's no data in the database, So you have to open a new chat using @username in the chat input field.
