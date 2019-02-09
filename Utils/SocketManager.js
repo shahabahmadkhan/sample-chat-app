@@ -92,7 +92,8 @@ exports.connectSocket = function (server) {
                     let dataToSave = {
                         from_user_id: decodedData.id,
                         to_user_id: data.receiver_id,
-                        chatTxt: data.chatMsg
+                        chatTxt: data.chatMsg,
+                        webPush : decodedData.username + ': ' + data.chatMsg
                     };
                     process.emit('chatMsgReceived', dataToSave);
                     //check if receiver is online or not

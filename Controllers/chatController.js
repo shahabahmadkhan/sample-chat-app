@@ -16,7 +16,7 @@ const getPaginatedChats = (payloadData, cb) => {
 
     };
     let projection = {__v: 0, _id: 0};
-    chatService.getChats(criteria, projection, {lean: true, sort: {createdAt: -1}}, function (err, result) {
+    chatService.getChats(criteria, projection, {lean: true, sort: {createdAt: 1}}, function (err, result) {
         if (err) {
             cb(APP_CONSTANTS.STATUS_MSG.ERROR.NOT_FOUND)
         } else {

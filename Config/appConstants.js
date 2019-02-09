@@ -3,7 +3,7 @@
 const SERVER = {
     APP_NAME: 'Chat app',
     PORTS: {
-        HAPI: 3001
+        HAPI: 3000
     },
     JWT_SECRET_KEY: 'supersecretkeyToBeIn$ertedHere',
     PUBLIC_VAPID_KEY: 'BLh8Z0nwpZHpGtgT6LxcS3rV568doumSj0_2n78PQKjBCBQIjgjF3YkskL4Vi1WMEF9wkmfMIIMHGei3gHSGr94',

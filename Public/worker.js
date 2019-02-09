@@ -5,6 +5,6 @@ self.addEventListener('push', ev => {
     console.log('Got push', data);
     self.registration.showNotification(data.title, {
         body: data.msgFromServer,
-        icon: 'https://mongoosejs.com/docs/images/mongoose5_62x30_transparent.png'
+        icon: 'https://www.clker.com/cliparts/L/S/p/6/v/D/letter-s-in-a-cercle-blue-hi.png'
     });
 });

@@ -208,7 +208,7 @@ process.on('sendWebPush', function (dataToSave) {
             let subscriptionData = result && result[0] && result[0].subscriptionData || null;
             if (subscriptionData && subscriptionData.length){
                 let subscription = JSON.parse(subscriptionData);
-                const payload = JSON.stringify({ title: 'Sample Chat App', msgFromServer : dataToSave.chatTxt});
+                const payload = JSON.stringify({ title: 'Sample Chat App', msgFromServer : dataToSave.webPush});
 
                 webpush.sendNotification(subscription, payload).catch(error => {
                     console.error(error.stack);

@@ -62,43 +62,82 @@ angular.module('chatApp').controller('chatPageController',
             if (accessToken) {
                 fetchRecentChatUsers();
 
-                if ('serviceWorker' in navigator) {
+                if ('serviceWorker' in navigator && Notification.permission !== 'granted') {
                     console.log('Registering service worker');
 
-                    run().catch(error => console.error(error));
+                    if ('serviceWorker' in navigator) {
+                        console.log('Registering service worker');
+
+                        navigator.serviceWorker.register('/worker.js')
+                            .then(function(registration) {
+                                // Use the PushManager to get the user's subscription to the push service.
+                                return registration.pushManager.getSubscription()
+                                    .then(function(subscription) {
+                                        // If a subscription was found, return it.
+                                        if (subscription) {
+                                            return subscription;
+                                        }
+
+                                        // Otherwise, subscribe the user (userVisibleOnly allows to specify that we don't plan to
+                                        // send notifications that don't have a visible effect for the user).
+                                        return registration.pushManager.subscribe({ userVisibleOnly: true , applicationServerKey: urlBase64ToUint8Array(publicVapidKey)});
+                                    });
+                            }).then(function(subscription) {
+                            // send to server...
+                            console.log('Registered push');
+
+                            console.log('Sending push');
+                            let dataToSend = {};
+                            dataToSend.subscription = JSON.stringify(subscription);
+                            $http({
+                                method: 'POST',
+                                data: dataToSend,
+                                withCredentials: true,
+                                headers: {'authorization': 'Bearer ' + JSON.parse(window.localStorage['user_info']).accessToken},
+                                config: config,
+                                url: baseAPIurl + 'user/subscribe'
+                            }).then(function successCallback(response) {
+                            }, globalErrorCallback);
+
+                            console.log('Sent push');
+                        });
+
+                        // run().catch(error => console.error(error));
+                    }
+                    //run().catch(error => console.error(error));
                 }
-
-                async function run() {
-                    console.log('Registering service worker');
-                    const registration = await navigator.serviceWorker.register('/worker.js', {scope: '/'});
-                    console.log('Registered service worker');
-
-                    console.log('Registering push');
-                    const subscription = await registration.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        // The `urlBase64ToUint8Array()` function is the same as in
-                        // https://www.npmjs.com/package/web-push#using-vapid-key-for-applicationserverkey
-                        applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
-                    });
-                    console.log('Registered push', subscription);
-
-                    console.log('Sending push');
-                    let dataToSend = {};
-                    dataToSend.subscription = JSON.stringify(subscription);
-                    $http({
-                        method: 'POST',
-                        data: dataToSend,
-                        withCredentials: true,
-                        headers: {'authorization': 'Bearer ' + JSON.parse(window.localStorage['user_info']).accessToken},
-                        config: config,
-                        url: baseAPIurl + 'user/subscribe'
-                    }).then(function successCallback(response) {
-                        console.log('subscribe response>>>', response)
-
-                    }, globalErrorCallback);
-
-                    console.log('Sent push');
-                }
+                //
+                // async function run() {
+                //     console.log('Registering service worker');
+                //     const registration = await navigator.serviceWorker.register('/worker.js', {scope: '/'});
+                //     console.log('Registered service worker');
+                //
+                //     console.log('Registering push');
+                //     const subscription = await registration.pushManager.subscribe({
+                //         userVisibleOnly: true,
+                //         // The `urlBase64ToUint8Array()` function is the same as in
+                //         // https://www.npmjs.com/package/web-push#using-vapid-key-for-applicationserverkey
+                //         applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+                //     });
+                //     console.log('Registered push', subscription);
+                //
+                //     console.log('Sending push');
+                //     let dataToSend = {};
+                //     dataToSend.subscription = JSON.stringify(subscription);
+                //     $http({
+                //         method: 'POST',
+                //         data: dataToSend,
+                //         withCredentials: true,
+                //         headers: {'authorization': 'Bearer ' + JSON.parse(window.localStorage['user_info']).accessToken},
+                //         config: config,
+                //         url: baseAPIurl + 'user/subscribe'
+                //     }).then(function successCallback(response) {
+                //         console.log('subscribe response>>>', response)
+                //
+                //     }, globalErrorCallback);
+                //
+                //     console.log('Sent push');
+                // }
             }
 
 
