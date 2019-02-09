@@ -32,7 +32,7 @@ const MONGO_URI = process.env.MONGODB_URI || require('./Config/dbConfig')[proces
 
 //Define server constant
 const server = new Hapi.Server({
-    port: APP_CONSTANTS.SERVER.PORTS.HAPI,
+    port: APP_CONSTANTS.SERVER.PORTS.HAPI[process.env.NODE_ENV],
     routes: {
         cors: true,
         validate: {
