@@ -2,7 +2,7 @@
 
 const dev_config = {
     mongo : {
-        URI: process.env.MONGO_URI || 'mongodb://localhost/sampleChatApp',
+        URI: process.env.MONGODB_URI || 'mongodb://localhost/sampleChatApp',
         port: 27017
     },
     redis : {
@@ -13,7 +13,7 @@ const dev_config = {
 
 const production_config = {
     mongo : {
-        URI: process.env.MONGO_URI,
+        URI: process.env.MONGODB_URI,
         port: 27017
     },
     redis : {

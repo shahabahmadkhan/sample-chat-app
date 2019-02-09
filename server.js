@@ -28,7 +28,7 @@ const Pack = require('./package');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'dev'; // By default dev env variable
 
-const MONGO_URI = process.env.DATABASE_URL || require('./Config/dbConfig')[process.env.NODE_ENV + '_config'].mongo.URI;
+const MONGO_URI = process.env.MONGODB_URI || require('./Config/dbConfig')[process.env.NODE_ENV + '_config'].mongo.URI;
 
 //Define server constant
 const server = new Hapi.Server({
