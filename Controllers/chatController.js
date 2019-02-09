@@ -16,7 +16,7 @@ const getPaginatedChats = (payloadData, cb) => {
 
     };
     let projection = {__v: 0, _id: 0};
-    chatService.getChats(criteria, projection, {lean: true}, function (err, result) {
+    chatService.getChats(criteria, projection, {lean: true, sort: {createdAt: -1}}, function (err, result) {
         if (err) {
             cb(APP_CONSTANTS.STATUS_MSG.ERROR.NOT_FOUND)
         } else {
@@ -35,10 +35,10 @@ const insertChat = (payloadData, cb) => {
 };
 
 process.on('chatMsgReceived', function (payloadData) {
-    if (payloadData.from_user_id){
+    if (payloadData.from_user_id) {
         payloadData.from_user_id = mongoose.Types.ObjectId(payloadData.from_user_id);
     }
-    if (payloadData.to_user_id){
+    if (payloadData.to_user_id) {
         payloadData.to_user_id = mongoose.Types.ObjectId(payloadData.to_user_id);
     }
     insertChat(payloadData, function (err, data) {

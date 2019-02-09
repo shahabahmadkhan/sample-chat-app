@@ -12,7 +12,7 @@ const chatModel = new Schema({
     },
     readFlag : { type: Boolean, default: false }, // By default the msg will be unread
     chatTxt : {type: String, required: true},
-    createdAt : { type: Date, default: Date.now},
+    createdAt : { type: Date, default: new Date().getTime()},
 });
 
 chatModel.index({ from_user_id: 1, to_user_id: 1 });

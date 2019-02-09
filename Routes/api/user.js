@@ -101,7 +101,6 @@ let subscriberHandler = (request) => {
         if (request.auth.isAuthenticated && request.auth.credentials.userData.id) {
             let subscription = JSON.parse(request.payload.subscription);
             const payload = JSON.stringify({ title: 'Sample Chat App', msgFromServer : 'You are now subscribed to notification' });
-            console.log(subscription);
 
             userController.updateSubscription(request.auth.credentials.userData.id, request.payload.subscription, function (err, status) {
                 //status == 1 (already existed), status == 0 not existed
