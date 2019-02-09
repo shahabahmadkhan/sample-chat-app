@@ -7,10 +7,13 @@ let Jwt = require('jsonwebtoken');
 //Connect To Redis
 let redis = require('redis');
 let redisClient = null;
-if (process.env.NODE_ENV == 'dev'){
+if (process.env.NODE_ENV === 'dev'){
     redisClient = redis.createClient(redisConfig.port, redisConfig.URI);
 }else {
-    redisClient = redis.createClient(process.env.REDISTOGO_URL);
+    //configuration for heroku deployment
+    let rtg   = require("url").parse(process.env.REDISTOGO_URL);
+    redisClient = require("redis").createClient(rtg.port, rtg.hostname);
+    redisClient.auth(rtg.auth.split(":")[1]);
 }
 redisClient.on('error', function (err) {
     console.log('Error ' + err);
