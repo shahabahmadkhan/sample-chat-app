@@ -138,6 +138,8 @@ angular.module('chatApp').controller('chatPageController',
                 //
                 //     console.log('Sent push');
                 // }
+            } else {
+                $state.go('home')
             }
 
 
