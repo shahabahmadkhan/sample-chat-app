@@ -67,23 +67,26 @@ angular.module('chatApp').controller('chatPageController',
             }
 
             socket.on('incomingChatMsgForReceiver', function (data) {
-                $scope.$apply(function () {
-                    if (!$scope.listOfRecentChats.hasOwnProperty(data.from_username)) {
-                        $scope.listOfRecentChats[data.from_username] = $scope.availableUsers[data.from_username];
-                    }
-                    //fill up the recent chat
-                    let chatMsgObj = {
-                        chatTxt: data.chatTxt,
-                        direction: 'received',
-                        time: moment(new Date()).fromNow()
-                    };
-                    $scope.listOfRecentChats[data.from_username].chatArray.push(chatMsgObj);
-                    if ($scope.activeChatUsername == null) {
-                        growl.success('New Msg From : ' + $scope.availableUsers[data.from_username].userFullName)
-                    }
-                    console.log('data',data)
-                    scrollChatToBottom();
-                })
+                if ($scope.availableUsers.hasOwnProperty(data.from_username)){
+                    $scope.$apply(function () {
+                        if (!$scope.listOfRecentChats.hasOwnProperty(data.from_username)) {
+                            $scope.listOfRecentChats[data.from_username] = $scope.availableUsers[data.from_username];
+                        }
+                        //fill up the recent chat
+                        let chatMsgObj = {
+                            chatTxt: data.chatTxt,
+                            direction: 'received',
+                            time: moment(new Date()).fromNow()
+                        };
+                        $scope.listOfRecentChats[data.from_username].chatArray.push(chatMsgObj);
+                        if ($scope.activeChatUsername == null) {
+                            growl.success('New Msg From : ' + $scope.availableUsers[data.from_username].userFullName)
+                        }
+                        console.log('data',data)
+                        scrollChatToBottom();
+                    })
+                }
+
             });
 
             function sendChatMsg(username, chatMsg, openChatFlag) {
@@ -214,7 +217,6 @@ angular.module('chatApp').controller('chatPageController',
                     config: config,
                     url: baseAPIurl + 'chat/getPaginatedChat'
                 }).then(function successCallback(response) {
-                    console.log('response>>>', response)
                     if (response.data.status == 'failure' || response.data.statusCode == 400) {
                         growl.error(response.data.message, {ttl: 5000});
                     } else {
@@ -222,6 +224,7 @@ angular.module('chatApp').controller('chatPageController',
                             $scope.listOfRecentChats[$scope.activeChatUsername].chatArray = response.data.chatMsgArray;
                         });
                         growl.success('Fetched Successfully', {ttl: 5000});
+                        scrollChatToBottom()
                     }
                 }, globalErrorCallback);
             }
@@ -234,7 +237,6 @@ angular.module('chatApp').controller('chatPageController',
                     $scope.activeChatUsername = key;
                     $scope.listOfRecentChats[key].activeSession = true;
                     fetchChatArrayViaREST($scope.availableUsers[$scope.activeChatUsername]._id);
-                    //TODO HIT API
                 }
             };
 
@@ -252,7 +254,11 @@ angular.module('chatApp').controller('chatPageController',
             });
 
             $scope.startNewChat = function () {
+                if ($scope.listOfRecentChats.hasOwnProperty($scope.activeChatUsername)){
+                    $scope.listOfRecentChats[$scope.activeChatUsername].activeSession = false;
+                }
                 $scope.activeChatUsername = null;
+                angular.element('#chat_box_text_input').focus();
             }
         }
     ]

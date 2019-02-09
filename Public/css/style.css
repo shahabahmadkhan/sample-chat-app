@@ -288,3 +288,11 @@ body,html{
 .contacts li:not(:last-child):hover {
     background: #90cad9;
 }
+
+#overlayed_div_inside_msg_base_container {
+    position: absolute;
+    top:10px;
+    left:10px;
+    z-index: 2;
+    color:white;
+}
